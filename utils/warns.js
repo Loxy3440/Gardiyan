@@ -28,4 +28,14 @@ async function getWarns(guildId, userId) {
   return db.collection('warns').find({ guildId, userId }).sort({ timestamp: -1 }).toArray();
 }
 
-module.exports = { addWarn, getWarns };
+// 2 gunden eski uyarilari siler (ready.js her 1 dakikada bir cagirir).
+const WARN_EXPIRY_MS = 2 * 24 * 60 * 60 * 1000;
+
+async function deleteExpiredWarns() {
+  const db = getDb();
+  const cutoff = new Date(Date.now() - WARN_EXPIRY_MS);
+  const result = await db.collection('warns').deleteMany({ timestamp: { $lt: cutoff } });
+  return result.deletedCount;
+}
+
+module.exports = { addWarn, getWarns, deleteExpiredWarns };
