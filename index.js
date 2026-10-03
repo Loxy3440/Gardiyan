@@ -58,8 +58,10 @@ for (const file of eventFiles) {
   try {
     await connectDB();
   } catch (err) {
+    // DB olmadan bot calismasin: Render hatayi net gorsun ve yeniden denesin.
     console.error('[MONGODB] Baglanti hatasi:', err.message);
-    console.error('MONGO_URI degiskenini .env dosyanda kontrol et. Bot MongoDB olmadan da acilir ama warn/auto/rolver gibi komutlar calismaz.');
+    console.error('Kontrol: 1) Render Environment\'ta MONGO_URI var mi  2) Atlas > Network Access\'te 0.0.0.0/0 izinli mi  3) sifre/kullanici dogru mu');
+    process.exit(1);
   }
 
   client.login(process.env.TOKEN);
