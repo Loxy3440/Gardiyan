@@ -130,7 +130,7 @@ async function saveYtConfig(guildId, data) {
 const running = new Set(); // ayni sunucuda /yt ust uste calisip ayni videoyu iki kez atmasin
 
 function buildMessage(channelTitle, video) {
-  return `@everyone **${channelTitle}** yeni bir video yukledi!\n**${video.title}**\nhttps://www.youtube.com/watch?v=${video.id}`;
+  return `@here **${channelTitle}** yeni bir video yukledi!\n**${video.title}**\nhttps://www.youtube.com/watch?v=${video.id}`;
 }
 
 // Her izlenen kanal icin yeni videolari bulur, duyuru kanalina atar. Sonuc listesi doner.

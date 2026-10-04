@@ -42,7 +42,7 @@ function buildPreview(config, channelTitle, video) {
       { name: 'YouTube Kanali', value: channelTitle, inline: true },
       { name: 'Gonderilecek Kanal', value: `<#${config.announceChannelId}>`, inline: true },
     )
-    .setFooter({ text: 'Onaylarsan duyuru kanalina @everyone ile atilir.' });
+    .setFooter({ text: 'Onaylarsan duyuru kanalina @here ile atilir.' });
 
   if (video.published) {
     embed.addFields({ name: 'Yuklenme', value: `<t:${Math.floor(new Date(video.published).getTime() / 1000)}:R>`, inline: true });
