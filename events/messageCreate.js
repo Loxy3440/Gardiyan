@@ -1,4 +1,5 @@
 const { getConfig } = require('../utils/guildConfig');
+const { getActiveEvent, isWinningMessage, claimWinner, applyPlaceholders } = require('../utils/events');
 
 // /trigger icin bellek-ici bekleme (cooldown) takibi. Bot yeniden baslatilinca sifirlanir, bu kasitli.
 const triggerCooldowns = new Map(); // key: `${guildId}:${watchId}` -> son gonderim zamani (ms)
@@ -9,6 +10,20 @@ module.exports = {
   async execute(message) {
     try {
       if (message.author.bot || !message.guild) return;
+
+      // ---------- /setevent: aktif eventte kelimeyi ilk yazan kazanir ----------
+      const activeEvent = getActiveEvent(message.channel.id);
+      if (activeEvent && isWinningMessage(activeEvent, message.content)) {
+        const won = await claimWinner(activeEvent, message.author.id);
+        if (won) {
+          const text = applyPlaceholders(activeEvent.winMessage, {
+            user: `<@${message.author.id}>`,
+            server: message.guild.name,
+            channel: `<#${message.channel.id}>`,
+          });
+          await message.reply({ content: text }).catch(() => {});
+        }
+      }
 
       const config = await getConfig(message.guild.id);
 

@@ -4,6 +4,7 @@ const { getConfig } = require('../utils/guildConfig');
 const { connectToVoice } = require('../utils/voiceConnection');
 const { infoEmbed } = require('../utils/embeds');
 const { startActivityRotation } = require('../utils/activityRotator');
+const { loadActiveEvents, runDueEvents } = require('../utils/events');
 
 module.exports = {
   name: 'clientReady',
@@ -65,6 +66,22 @@ module.exports = {
         console.error('[TEMP ROLE SCHEDULER]', err);
       }
     }, 5000);
+
+    // /setevent: aktif eventleri yukle ve zamani gelenleri her 10 saniyede bir gonder.
+    try {
+      const count = await loadActiveEvents();
+      console.log(`[EVENT] ${count} aktif event yuklendi.`);
+    } catch (err) {
+      console.error('[EVENT LOAD]', err);
+    }
+
+    setInterval(async () => {
+      try {
+        await runDueEvents(client);
+      } catch (err) {
+        console.error('[EVENT SCHEDULER]', err);
+      }
+    }, 10_000);
 
     // Suresi dolan (2 gunden eski) uyarilari her 1 dakikada bir sil.
     setInterval(async () => {
