@@ -27,9 +27,8 @@ const { getActivityConfig, setActivityConfig, addActivity, removeActivity } = re
 const { startActivityRotation } = require('../utils/activityRotator');
 const { removeTempRole } = require('../utils/tempRoles');
 const { clearActiveTimer } = require('../utils/activeTimers');
-const { buildStatusEmbed: buildWLStatusEmbed, buildSelectRow: buildWLSelectRow } = require('../utils/welcomeLeaveUI');
-const { getPrivateMessage } = require('../utils/privateMessages');
 const { handleEventInteraction } = require('../utils/eventListUI');
+const { handleInviteInteraction } = require('../utils/inviteUI');
 
 module.exports = {
   name: 'interactionCreate',
@@ -57,115 +56,15 @@ module.exports = {
     // ---------- /eventlist (liste / duzenle / sil) ----------
     if (await handleEventInteraction(interaction)) return;
 
+    // ---------- /invites (detay sayfalari) ----------
+    if (await handleInviteInteraction(interaction)) return;
+
     // ---------- HELP DROPDOWN MENUSU ----------
     if (interaction.isStringSelectMenu() && interaction.customId === 'help_category') {
       const helpCommand = interaction.client.commands.get('help');
       const selected = interaction.values[0];
       const embed = selected === 'return' ? helpCommand.mainEmbed() : helpCommand.categoryEmbed(selected);
       return interaction.update({ embeds: [embed] });
-    }
-
-    // ---------- WELCOMER / LEAVER DROPDOWN MENUSU ----------
-    if (interaction.isStringSelectMenu() && interaction.customId.startsWith('wlconfig_menu_')) {
-      if (!interaction.member.permissions.has(PermissionFlagsBits.ManageGuild)) {
-        return interaction.reply({ embeds: [permissionDeniedEmbed()], ephemeral: true });
-      }
-
-      const kind = interaction.customId.replace('wlconfig_menu_', ''); // 'welcome' | 'leave'
-      const selected = interaction.values[0];
-
-      if (selected === 'set_channel') {
-        const channelSelect = new ChannelSelectMenuBuilder()
-          .setCustomId(`wlconfig_channel_${kind}`)
-          .setPlaceholder('Bir kanal sec...')
-          .addChannelTypes(ChannelType.GuildText);
-
-        return interaction.update({ components: [new ActionRowBuilder().addComponents(channelSelect)] });
-      }
-
-      if (selected === 'set_message') {
-        const modal = new ModalBuilder()
-          .setCustomId(`wlconfig_modal_${kind}`)
-          .setTitle(kind === 'welcome' ? 'Karsilama Mesaji' : 'Ayrilma Mesaji');
-
-        const input = new TextInputBuilder()
-          .setCustomId('template_text')
-          .setLabel('Mesaj sablonu')
-          .setStyle(TextInputStyle.Paragraph)
-          .setRequired(true)
-          .setMaxLength(1000)
-          .setPlaceholder('content: Hos geldin {user}!\ntitle: Yeni Uye\ndescription: Sunucumuza hos geldin\nfooter: {server}');
-
-        modal.addComponents(new ActionRowBuilder().addComponents(input));
-        return interaction.showModal(modal);
-      }
-
-      if (selected === 'toggle') {
-        const field = kind === 'welcome' ? 'welcomeEnabled' : 'leaveEnabled';
-        const config = await getConfig(interaction.guild.id);
-        await setConfig(interaction.guild.id, { [field]: !config[field] });
-        const updated = await getConfig(interaction.guild.id);
-        return interaction.update({ embeds: [buildWLStatusEmbed(kind, updated)], components: [buildWLSelectRow(kind)] });
-      }
-      return;
-    }
-
-    // ---------- WELCOMER / LEAVER KANAL SECICI ----------
-    if (interaction.isChannelSelectMenu() && interaction.customId.startsWith('wlconfig_channel_')) {
-      const kind = interaction.customId.replace('wlconfig_channel_', '');
-      const channelId = interaction.values[0];
-
-      await setConfig(interaction.guild.id, kind === 'welcome' ? { welcomeChannelId: channelId } : { leaveChannelId: channelId });
-
-      const updated = await getConfig(interaction.guild.id);
-      return interaction.update({ embeds: [buildWLStatusEmbed(kind, updated)], components: [buildWLSelectRow(kind)] });
-    }
-
-    // ---------- WELCOMER / LEAVER MESAJ SABLONU MODAL ----------
-    if (interaction.isModalSubmit() && interaction.customId.startsWith('wlconfig_modal_')) {
-      const kind = interaction.customId.replace('wlconfig_modal_', '');
-      const text = interaction.fields.getTextInputValue('template_text');
-
-      await setConfig(interaction.guild.id, kind === 'welcome' ? { welcomeMessage: text } : { leaveMessage: text });
-
-      const updated = await getConfig(interaction.guild.id);
-      const payload = { embeds: [buildWLStatusEmbed(kind, updated)], components: [buildWLSelectRow(kind)] };
-
-      if (interaction.isFromMessage()) {
-        return interaction.update(payload);
-      }
-      return interaction.reply({ content: 'Sablon guncellendi.', ephemeral: true });
-    }
-
-    // ---------- OZEL MESAJ (/m) GORUNTULEME BUTONU ----------
-    if (interaction.isButton() && interaction.customId.startsWith('pmreveal_')) {
-      const id = interaction.customId.replace('pmreveal_', '');
-      const record = await getPrivateMessage(id).catch(() => null);
-
-      if (!record) {
-        return interaction.reply({ embeds: [errorEmbed('Bu mesaj artik bulunamiyor.')], ephemeral: true });
-      }
-
-      if (interaction.user.id !== record.targetId) {
-        return interaction.reply({ embeds: [errorEmbed('Bu mesaj sana ait degil, sadece hedeflenen kisi gorebilir.')], ephemeral: true });
-      }
-
-      const revealEmbed = new EmbedBuilder()
-        .setTitle('📨 Sana Ozel Mesaj')
-        .setDescription(record.content || '*(sadece dosya/gorsel/video)*')
-        .setColor(0x57f287)
-        .setFooter({ text: `Gonderen: <@${record.senderId}>` })
-        .setTimestamp(record.createdAt);
-
-      if (record.attachmentUrl) {
-        if ((record.attachmentType || '').startsWith('image/')) {
-          revealEmbed.setImage(record.attachmentUrl);
-        } else {
-          revealEmbed.addFields({ name: 'Ek Dosya', value: `[Dosyayi Ac](${record.attachmentUrl})` });
-        }
-      }
-
-      return interaction.reply({ embeds: [revealEmbed], ephemeral: true });
     }
 
     // ---------- AUTO MENUSU (dropdown) ----------
@@ -654,73 +553,6 @@ module.exports = {
       const updated = await getConfig(interaction.guild.id);
       const autoroleCmd = interaction.client.commands.get('autorole');
       return interaction.update({ embeds: [autoroleCmd.buildStatusEmbed(updated)], components: [autoroleCmd.buildSelectRow()] });
-    }
-
-    // ---------- TRIGGER - MODAL (hareketlilik tetikleyicisi ekle) ----------
-    if (interaction.isModalSubmit() && interaction.customId.startsWith('trigger_modal_add_')) {
-      const [targetId, notifyId, watchType, cooldownMinutesStr] = interaction.customId.replace('trigger_modal_add_', '').split('_');
-      const cooldownMinutes = parseInt(cooldownMinutesStr, 10) || 10;
-
-      const message = interaction.fields.getTextInputValue('trigger_message');
-      let newChannelMessage = null;
-      try {
-        newChannelMessage = interaction.fields.getTextInputValue('trigger_newchannel_message') || null;
-      } catch {
-        // kategori degilse bu alan modalde yok, atla
-      }
-
-      await upsertActivityTrigger(interaction.guild.id, {
-        watchId: targetId,
-        watchType,
-        notifyChannelId: notifyId,
-        message,
-        newChannelMessage,
-        cooldownSeconds: cooldownMinutes * 60,
-      });
-
-      return interaction.reply({
-        embeds: [
-          successEmbed(
-            'Tetikleyici Eklendi',
-            `<#${targetId}> icin hareketlilik tetikleyicisi kaydedildi. Bildirimler <#${notifyId}> kanalina gidecek.${newChannelMessage ? '\nYeni kanal acilinca da otomatik mesaj atilacak.' : ''}`,
-          ),
-        ],
-        ephemeral: true,
-      });
-    }
-
-    // ---------- INVITES - DETAY BUTONU ----------
-    if (interaction.isButton() && interaction.customId.startsWith('invites_details_')) {
-      const userId = interaction.customId.replace('invites_details_', '');
-
-      await interaction.deferReply({ ephemeral: true });
-
-      let allInvites;
-      try {
-        allInvites = await interaction.guild.invites.fetch();
-      } catch (err) {
-        console.error('[INVITES]', err);
-        return interaction.editReply({ embeds: [errorEmbed('Davetler alinirken bir hata olustu.')] });
-      }
-
-      const userInvites = allInvites.filter(inv => inv.inviter?.id === userId);
-
-      if (!userInvites.size) {
-        return interaction.editReply({ embeds: [warningEmbed('Davet Yok', 'Bu kullanicinin aktif bir davet linki yok.')] });
-      }
-
-      const lines = userInvites.map(inv => {
-        const expires = inv.expiresTimestamp ? `<t:${Math.floor(inv.expiresTimestamp / 1000)}:R>` : 'Suresiz';
-        const maxUses = inv.maxUses || 'Sinirsiz';
-        return `\`${inv.code}\` - <#${inv.channelId}> - **${inv.uses ?? 0}** kullanim (max: ${maxUses}) - Bitis: ${expires}`;
-      });
-
-      const embed = new EmbedBuilder()
-        .setTitle('Davet Linki Detaylari')
-        .setColor(0x5865f2)
-        .setDescription(lines.join('\n'));
-
-      return interaction.editReply({ embeds: [embed] });
     }
 
     // ---------- CHANNELBIP MENUSU (dropdown) ----------

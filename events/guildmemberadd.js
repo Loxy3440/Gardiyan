@@ -1,10 +1,17 @@
 const { getConfig } = require('../utils/guildConfig');
-const { renderTemplate } = require('../utils/messageTemplate');
+const { recordJoin } = require('../utils/inviteTracker');
 
 module.exports = {
   name: 'guildMemberAdd',
   once: false,
   async execute(member) {
+    // Hangi davetle geldigini kaydet (hata verse bile diger islemler devam etsin).
+    try {
+      await recordJoin(member);
+    } catch (err) {
+      console.error('[INVITE TRACK]', err);
+    }
+
     try {
       const config = await getConfig(member.guild.id);
 
@@ -32,16 +39,6 @@ module.exports = {
           }
         }
       }
-
-      if (!config.welcomeEnabled || !config.welcomeChannelId) return;
-
-      const channel = member.guild.channels.cache.get(config.welcomeChannelId);
-      if (!channel) return;
-
-      const template = config.welcomeMessage || 'content: Hos geldin {user}!';
-      const payload = renderTemplate(template, { user: member.toString(), server: member.guild.name });
-
-      await channel.send(payload);
     } catch (err) {
       console.error('[guildMemberAdd]', err);
     }

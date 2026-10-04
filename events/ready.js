@@ -5,6 +5,7 @@ const { connectToVoice } = require('../utils/voiceConnection');
 const { infoEmbed } = require('../utils/embeds');
 const { startActivityRotation } = require('../utils/activityRotator');
 const { loadActiveEvents, runDueEvents } = require('../utils/events');
+const { cacheGuildInvites } = require('../utils/inviteTracker');
 
 module.exports = {
   name: 'clientReady',
@@ -66,6 +67,11 @@ module.exports = {
         console.error('[TEMP ROLE SCHEDULER]', err);
       }
     }, 5000);
+
+    // /invites: hangi davetle girildigini bulabilmek icin mevcut davet kullanimlarini hafizaya al.
+    for (const guild of client.guilds.cache.values()) {
+      await cacheGuildInvites(guild);
+    }
 
     // /setevent: aktif eventleri yukle ve zamani gelenleri her 5 saniyede bir gonder.
     try {
