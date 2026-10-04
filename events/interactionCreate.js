@@ -29,6 +29,7 @@ const { removeTempRole } = require('../utils/tempRoles');
 const { clearActiveTimer } = require('../utils/activeTimers');
 const { handleEventInteraction } = require('../utils/eventListUI');
 const { handleInviteInteraction } = require('../utils/inviteUI');
+const { handleYtSendInteraction } = require('../utils/ytSendUI');
 
 module.exports = {
   name: 'interactionCreate',
@@ -58,6 +59,9 @@ module.exports = {
 
     // ---------- /invites (detay sayfalari) ----------
     if (await handleInviteInteraction(interaction)) return;
+
+    // ---------- /ytsend (kanal sec, onayla, gonder) ----------
+    if (await handleYtSendInteraction(interaction)) return;
 
     // ---------- HELP DROPDOWN MENUSU ----------
     if (interaction.isStringSelectMenu() && interaction.customId === 'help_category') {

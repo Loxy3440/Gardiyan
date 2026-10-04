@@ -210,7 +210,31 @@ async function checkAndAnnounce(guild, config) {
   }
 }
 
+// Tek bir videoyu duyuru kanalina atar ve "goruldu" olarak kaydeder (/ytsend icin).
+async function announceVideo(guild, config, channelEntry, channelTitle, video) {
+  const announceChannel = guild.channels.cache.get(config.announceChannelId);
+  if (!announceChannel || !announceChannel.isTextBased()) {
+    throw new Error('Duyuru kanali bulunamadi. /setyt ile tekrar ayarla.');
+  }
+
+  await announceChannel.send({
+    content: buildMessage(channelTitle, video),
+    allowedMentions: { parse: ['everyone'] },
+  });
+
+  // Ayni video sonra /yt ile tekrar atilmasin.
+  const latest = (await getYtConfig(guild.id)) || config;
+  const channels = latest.channels.map(c => {
+    if (c.channelId !== channelEntry.channelId) return c;
+    const seen = [...new Set([...(c.seen || []), video.id])].slice(-MAX_SEEN);
+    return { ...c, title: channelTitle, seen };
+  });
+  await saveYtConfig(guild.id, { channels });
+  return announceChannel;
+}
+
 module.exports = {
+  announceVideo,
   MAX_CHANNELS,
   MAX_ANNOUNCE_PER_CHANNEL,
   interpretInput,
