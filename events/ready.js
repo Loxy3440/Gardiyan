@@ -67,7 +67,7 @@ module.exports = {
       }
     }, 5000);
 
-    // /setevent: aktif eventleri yukle ve zamani gelenleri her 10 saniyede bir gonder.
+    // /setevent: aktif eventleri yukle ve zamani gelenleri her 5 saniyede bir gonder.
     try {
       const count = await loadActiveEvents();
       console.log(`[EVENT] ${count} aktif event yuklendi.`);
@@ -81,7 +81,7 @@ module.exports = {
       } catch (err) {
         console.error('[EVENT SCHEDULER]', err);
       }
-    }, 10_000);
+    }, 5_000);
 
     // Suresi dolan (2 gunden eski) uyarilari her 1 dakikada bir sil.
     setInterval(async () => {

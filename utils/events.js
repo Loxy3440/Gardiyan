@@ -1,3 +1,4 @@
+const { ObjectId } = require('mongodb');
 const { getDb } = require('./db');
 
 // Aktif (kazanani beklenen) eventler bellekte tutulur: channelId -> event.
@@ -7,6 +8,37 @@ const activeByChannel = new Map();
 function normalize(text) {
   return String(text || '').trim().toLowerCase();
 }
+
+// "30s", "1m", "2h", "1d", "1h30m", "1 saat 30 dakika" gibi sureleri milisaniyeye cevirir. Gecersizse null.
+// Birimler: saniye = s/sn/saniye, dakika = m/dk/dakika, saat = h/sa/saat, gun = d/g/gun
+const UNIT_MS = { s: 1000, m: 60_000, h: 3_600_000, d: 86_400_000 };
+const UNIT_MAP = {
+  saniye: 's', sn: 's', s: 's',
+  dakika: 'm', dk: 'm', m: 'm',
+  saat: 'h', sa: 'h', h: 'h',
+  gun: 'd', g: 'd', d: 'd',
+};
+
+function parseEventDuration(input) {
+  const text = String(input || '').toLocaleLowerCase('tr').replace(/ü/g, 'u').replace(/ı/g, 'i').trim();
+  if (!text) return null;
+
+  const re = /(\d+)\s*(saniye|dakika|saat|gun|sn|dk|sa|s|m|h|d|g)/g;
+  let total = 0;
+  let matched = '';
+  let m;
+  while ((m = re.exec(text)) !== null) {
+    total += parseInt(m[1], 10) * UNIT_MS[UNIT_MAP[m[2]]];
+    matched += m[0];
+  }
+
+  // Tum metin birimlerle aciklanmali (aksi halde "abc 5m" gibi seyler kabul edilmesin).
+  if (!total || matched.replace(/\s+/g, '') !== text.replace(/\s+/g, '')) return null;
+  return total;
+}
+
+const MIN_DURATION_MS = 1000; // 1 saniye
+const MAX_DURATION_MS = 30 * UNIT_MS.d; // 30 gun
 
 function applyPlaceholders(text, { user, server, channel }) {
   return String(text || '')
@@ -130,7 +162,54 @@ async function runDueEvents(client) {
   }
 }
 
+// ---------- /eventlist yardimcilari ----------
+const LIVE_STATUSES = ['scheduled', 'sending', 'active'];
+
+async function listEvents(guildId) {
+  const db = getDb();
+  return db.collection('events').find({ guildId, status: { $in: LIVE_STATUSES } }).sort({ sendAt: 1 }).toArray();
+}
+
+async function getEvent(idString) {
+  let oid;
+  try {
+    oid = new ObjectId(idString);
+  } catch {
+    return null;
+  }
+  const db = getDb();
+  return db.collection('events').findOne({ _id: oid });
+}
+
+// Event hala bekliyor/aktif ise gunceller. Arada durumu degistiyse (ornegin gonderildi) false doner.
+async function updateEvent(event, fields) {
+  const db = getDb();
+  const result = await db.collection('events').updateOne({ _id: event._id, status: event.status }, { $set: fields });
+  if (!result.matchedCount) return false;
+
+  if (event.status === 'active') {
+    activeByChannel.set(event.activeChannelId, { ...event, ...fields });
+  }
+  return true;
+}
+
+async function deleteEvent(event) {
+  const db = getDb();
+  const result = await db.collection('events').deleteOne({ _id: event._id, status: event.status });
+  if (!result.deletedCount) return false;
+
+  if (event.status === 'active') activeByChannel.delete(event.activeChannelId);
+  return true;
+}
+
 module.exports = {
+  parseEventDuration,
+  MIN_DURATION_MS,
+  MAX_DURATION_MS,
+  listEvents,
+  getEvent,
+  updateEvent,
+  deleteEvent,
   createEvent,
   loadActiveEvents,
   runDueEvents,

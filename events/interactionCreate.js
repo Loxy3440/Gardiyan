@@ -29,6 +29,7 @@ const { removeTempRole } = require('../utils/tempRoles');
 const { clearActiveTimer } = require('../utils/activeTimers');
 const { buildStatusEmbed: buildWLStatusEmbed, buildSelectRow: buildWLSelectRow } = require('../utils/welcomeLeaveUI');
 const { getPrivateMessage } = require('../utils/privateMessages');
+const { handleEventInteraction } = require('../utils/eventListUI');
 
 module.exports = {
   name: 'interactionCreate',
@@ -52,6 +53,9 @@ module.exports = {
       }
       return;
     }
+
+    // ---------- /eventlist (liste / duzenle / sil) ----------
+    if (await handleEventInteraction(interaction)) return;
 
     // ---------- HELP DROPDOWN MENUSU ----------
     if (interaction.isStringSelectMenu() && interaction.customId === 'help_category') {

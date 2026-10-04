@@ -1,14 +1,14 @@
 const { SlashCommandBuilder, PermissionFlagsBits, ChannelType, EmbedBuilder } = require('discord.js');
 const { errorEmbed } = require('../utils/embeds');
-const { createEvent } = require('../utils/events');
+const { createEvent, parseEventDuration, MIN_DURATION_MS, MAX_DURATION_MS } = require('../utils/events');
 
 const TEXT_TYPES = [ChannelType.GuildText, ChannelType.GuildAnnouncement];
 
 const builder = new SlashCommandBuilder()
   .setName('setevent')
   .setDescription('Belirli saat sonra rastgele bir kanalda "ilk yazan kazanir" eventi baslatir')
-  .addNumberOption(opt =>
-    opt.setName('saat').setDescription('Kac saat sonra gonderilsin (ornek: 2 veya 0.5 = 30 dk)').setRequired(true).setMinValue(0.02).setMaxValue(720))
+  .addStringOption(opt =>
+    opt.setName('sure').setDescription('Ne kadar sonra gonderilsin. Ornek: 30s, 1m, 2h, 1d, 1h30m (s=saniye m=dakika h=saat d=gun)').setRequired(true).setMaxLength(40))
   .addStringOption(opt =>
     opt.setName('mesaj').setDescription('Event mesaji (ornek: Bu mesaji ilk yazan kazanir:)').setRequired(true).setMaxLength(1500))
   .addStringOption(opt =>
@@ -32,7 +32,7 @@ module.exports = {
   data: builder,
 
   async execute(interaction) {
-    const hours = interaction.options.getNumber('saat');
+    const durationMs = parseEventDuration(interaction.options.getString('sure'));
     const announcement = unescapeNewlines(interaction.options.getString('mesaj'));
     const word = interaction.options.getString('kelime').trim();
     const winMessage = unescapeNewlines(interaction.options.getString('kazanan_mesaj'));
@@ -41,6 +41,13 @@ module.exports = {
     for (let i = 1; i <= 5; i++) {
       const ch = interaction.options.getChannel(`kanal${i}`);
       if (ch && !channels.some(c => c.id === ch.id)) channels.push(ch);
+    }
+
+    if (durationMs === null || durationMs < MIN_DURATION_MS || durationMs > MAX_DURATION_MS) {
+      return interaction.reply({
+        embeds: [errorEmbed('Gecersiz sure. Ornekler: `30s` (30 saniye), `1m` (1 dakika), `2h` (2 saat), `1d` (1 gun), `1h30m`. En az 1 saniye, en fazla 30 gun.')],
+        ephemeral: true,
+      });
     }
 
     if (!word) {
@@ -57,7 +64,7 @@ module.exports = {
       });
     }
 
-    const sendAt = new Date(Date.now() + hours * 60 * 60 * 1000);
+    const sendAt = new Date(Date.now() + durationMs);
     await createEvent({
       guildId: interaction.guild.id,
       channelIds: channels.map(c => c.id),
