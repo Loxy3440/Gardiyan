@@ -48,7 +48,7 @@ module.exports = {
     }
 
     if (!member.moderatable) {
-      return interaction.reply({ embeds: [errorEmbed('Bu uyeyi susturamiyorum, rol hiyerarsisi buna izin vermiyor.')], ephemeral: true });
+      return interaction.reply({ embeds: [errorEmbed('Bu üyeyi susturamıyorum rol olarak üstümden.')], ephemeral: true });
     }
 
     await interaction.deferReply();
@@ -85,7 +85,7 @@ module.exports = {
       if (remaining <= 0) {
         clearActiveTimer(timerKey);
 
-        const expiredEmbed = infoEmbed('Sure Doldu - Susturma Kalkti', `**${member.user.tag}** kullanicisinin susturmasi suresi doldugu icin kalkti.`)
+        const expiredEmbed = infoEmbed('Mute Kalktı - Otomatik', `**${member.user.tag}**`)
           .setTimestamp();
 
         const disabledRow = new ActionRowBuilder().addComponents(

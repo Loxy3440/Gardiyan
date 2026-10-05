@@ -9,6 +9,8 @@ const {
   TextInputBuilder,
   TextInputStyle,
   EmbedBuilder,
+  ButtonBuilder,
+  ButtonStyle,
 } = require('discord.js');
 const { permissionDeniedEmbed, errorEmbed, successEmbed, warningEmbed } = require('../utils/embeds');
 const {
@@ -121,12 +123,31 @@ module.exports = {
           .addOptions(
             config.autoResponses.slice(0, 25).map(r => ({
               label: r.trigger.slice(0, 100),
-              description: r.response.slice(0, 100),
+              description: (r.response || '(sadece medya)').slice(0, 100),
               value: r.trigger.slice(0, 100),
             })),
           );
 
         return interaction.reply({ components: [new ActionRowBuilder().addComponents(removeMenu)], ephemeral: true });
+      }
+
+      // Tum otomatik cevaplari temizle -> once onay iste
+      if (selected === 'clear_autoresponses') {
+        const config = await getConfig(interaction.guild.id);
+        const count = config.autoResponses.length;
+        if (!count) {
+          return interaction.reply({ embeds: [errorEmbed('Temizlenecek otomatik cevap yok.')], ephemeral: true });
+        }
+
+        const row = new ActionRowBuilder().addComponents(
+          new ButtonBuilder().setCustomId('auto_clear_yes').setLabel(`Evet, ${count} mesaji sil`).setStyle(ButtonStyle.Danger),
+          new ButtonBuilder().setCustomId('auto_clear_no').setLabel('Vazgec').setStyle(ButtonStyle.Secondary),
+        );
+        return interaction.reply({
+          content: `⚠️ **${count}** otomatik mesajin hepsi silinecek. Emin misin?`,
+          components: [row],
+          ephemeral: true,
+        });
       }
 
       return;
@@ -182,6 +203,20 @@ module.exports = {
         content: `Otomatik cevap silindi: \`${trigger}\``,
         components: [],
       });
+    }
+
+    // ---------- AUTO - HEPSINI TEMIZLE (onay butonlari) ----------
+    if (interaction.isButton() && (interaction.customId === 'auto_clear_yes' || interaction.customId === 'auto_clear_no')) {
+      if (!interaction.member.permissions.has(PermissionFlagsBits.ManageGuild)) {
+        return interaction.reply({ embeds: [permissionDeniedEmbed()], ephemeral: true });
+      }
+
+      if (interaction.customId === 'auto_clear_no') {
+        return interaction.update({ content: 'Vazgecildi, hicbir sey silinmedi.', components: [] });
+      }
+
+      await setConfig(interaction.guild.id, { autoResponses: [] });
+      return interaction.update({ content: '🧹 Tum otomatik mesajlar silindi. `/auto` ile tekrar bakabilirsin.', components: [] });
     }
 
     // ---------- MENTION MENUSU (dropdown) ----------
