@@ -5,8 +5,8 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('slowmode')
     .setDescription('Bir kanala yavas mod uygular')
-    .addIntegerOption(opt => opt.setName('saniye').setDescription('Yavas mod suresi (saniye), 0 = kapali').setRequired(true).setMinValue(0).setMaxValue(21600))
-    .addChannelOption(opt => opt.setName('kanal').setDescription('Hedef kanal (bos birakilirsa bulundugun kanal)').addChannelTypes(ChannelType.GuildText).setRequired(false))
+    .addIntegerOption(opt => opt.setName('saniye').setDescription('Yavas mod süresi (saniye), 0 = kapalı').setRequired(true).setMinValue(0).setMaxValue(21600))
+    .addChannelOption(opt => opt.setName('kanal').setDescription('Hedef kanal (boş bırakılırsa bulunduğun kanal)').addChannelTypes(ChannelType.GuildText).setRequired(false))
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels),
 
   async execute(interaction) {
@@ -20,8 +20,8 @@ module.exports = {
     }
 
     const embed = seconds === 0
-      ? successEmbed('Yavas Mod Kapatildi', `${channel} icin yavas mod kapatildi.`)
-      : successEmbed('Yavas Mod Ayarlandi', `${channel} icin yavas mod **${seconds} saniye** olarak ayarlandi.`);
+      ? successEmbed('Yavas Mod Kapatıldı', `${channel} için yavaş mod kapatıldı.`)
+      : successEmbed('Yavas Mod Ayarlandı', `${channel} için yavaş mod **${seconds} saniye** olarak ayarlandı.`);
 
     embed.setFooter({ text: `Yetkili: ${interaction.user.tag}` }).setTimestamp();
     await interaction.reply({ embeds: [embed] });

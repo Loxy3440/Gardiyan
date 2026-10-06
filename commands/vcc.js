@@ -6,16 +6,16 @@ const { successEmbed, errorEmbed, warningEmbed } = require('../utils/embeds');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('vcc')
-    .setDescription('Botun acilista otomatik girecegi ses kanalini yonetir')
+    .setDescription('Botun açılışta gireceği ses kanalını ayarlar veya kapatır')
     .addSubcommand(sub =>
       sub
         .setName('set')
-        .setDescription('Botun girecegi ses kanalini ayarlar ve hemen baglanir')
+        .setDescription('Botun gireceği ses kanalını ayarlar ve hemen bağlanır')
         .addChannelOption(opt =>
-          opt.setName('kanal').setDescription('Ses kanali').addChannelTypes(ChannelType.GuildVoice).setRequired(true),
+          opt.setName('kanal').setDescription('Ses kanalı').addChannelTypes(ChannelType.GuildVoice).setRequired(true),
         ),
     )
-    .addSubcommand(sub => sub.setName('off').setDescription('Botu ses kanalindan cikarir ve ayari kaldirir'))
+    .addSubcommand(sub => sub.setName('off').setDescription('Botu ses kanalından çıkarır ve ayarı kaldırır'))
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
 
   async execute(interaction) {
@@ -31,7 +31,7 @@ module.exports = {
       } catch (err) {
         console.error('[VCC]', err);
         return interaction.reply({
-          embeds: [errorEmbed('Kanala baglanilirken bir hata olustu. `@discordjs/voice` ve `libsodium-wrappers` kurulu mu kontrol et (`npm install`).')],
+          embeds: [errorEmbed('Kanala bağlanırken bir hata oluştu. `@discordjs/voice` ve `libsodium-wrappers` kurulu mu kontrol et (`npm install`).')],
           ephemeral: true,
         });
       }
@@ -39,8 +39,8 @@ module.exports = {
       return interaction.reply({
         embeds: [
           successEmbed(
-            'Ses Kanali Ayarlandi',
-            `Bot artik acilista otomatik olarak ${channel} kanalina girecek (mikrofon ve kulaklik kapali). Simdi de baglandi.`,
+            'Ses kanalı ayarlandı',
+            `Bot artık açılışta otomatik olarak ${channel} kanalına girecek (mikrofon ve kulaklık kapalı). şimdi de bağlandı.`,
           ),
         ],
       });
@@ -49,12 +49,12 @@ module.exports = {
     // off
     const config = await getConfig(interaction.guild.id);
     if (!config.vcChannelId) {
-      return interaction.reply({ embeds: [warningEmbed('Zaten Kapali', 'Ayarlanmis bir ses kanali yok.')], ephemeral: true });
+      return interaction.reply({ embeds: [warningEmbed('Zaten Kapalı', 'Ayarlanmış bir ses kanali yok.')], ephemeral: true });
     }
 
     disconnectFromVoice(interaction.guild.id);
     await setConfig(interaction.guild.id, { vcChannelId: null });
 
-    return interaction.reply({ embeds: [successEmbed('Kapatildi', 'Bot ses kanalindan cikti ve otomatik baglanma kapatildi.')] });
+    return interaction.reply({ embeds: [successEmbed('Kapatıldı', 'Bot ses kanalindan çıktı ve otomatik bağlanma kapatıldı.')] });
   },
 };

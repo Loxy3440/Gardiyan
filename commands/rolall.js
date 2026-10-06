@@ -7,7 +7,7 @@ module.exports = {
     .setDescription('Sunucudaki herkese bir rol verir')
     .addRoleOption(opt => opt.setName('rol').setDescription('Verilecek rol').setRequired(true))
     .addBooleanOption(opt =>
-      opt.setName('botlar-dahil').setDescription('Botlara da verilsin mi? (varsayilan: hayir)').setRequired(false),
+      opt.setName('botlar-dahil').setDescription('Botlara da verilsin mi? (varsayılan: hayır)').setRequired(false),
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
 
@@ -17,7 +17,7 @@ module.exports = {
 
     if (role.managed) {
       return interaction.reply({
-        embeds: [errorEmbed('Bu rol bir entegrasyona (bot/boost rolu vb.) ait, elle verilemez.')],
+        embeds: [errorEmbed('Bu rol bir entegrasyona (bot/boost rolü vb.) ait, elle verilemez.')],
         ephemeral: true,
       });
     }
@@ -25,7 +25,7 @@ module.exports = {
     const botMember = interaction.guild.members.me;
     if (role.position >= botMember.roles.highest.position) {
       return interaction.reply({
-        embeds: [errorEmbed('Bu rol benim en yuksek rolumden yuksek veya esit konumda, once rolumu yukselt.')],
+        embeds: [errorEmbed('Bu rol benim en yüksek rolümden yüksek, veremem.')],
         ephemeral: true,
       });
     }
@@ -36,7 +36,7 @@ module.exports = {
     const targets = members.filter(m => (includeBots || !m.user.bot) && !m.roles.cache.has(role.id));
 
     if (!targets.size) {
-      return interaction.editReply({ embeds: [successEmbed('Yapilacak Bir Sey Yok', 'Hedeflenen herkeste zaten bu rol var.')] });
+      return interaction.editReply({ embeds: [successEmbed('Herkes bu rola sahip.')] });
     }
 
     let success = 0;
@@ -54,8 +54,8 @@ module.exports = {
     return interaction.editReply({
       embeds: [
         successEmbed(
-          'Rol Dagitildi',
-          `**${role.name}** rolu **${success}** uyeye verildi.${failed ? ` **${failed}** uyeye verilemedi (yetki/hiyerarsi sorunu olabilir).` : ''}`,
+          'Rol Verildi',
+          `**${role.name}** Rolü **${success}** uyeye verildi. ${failed ? ` **${failed}** uyeye verilemedi (yetki/hiyerarsi sorunu olabilir).` : ''}`,
         ),
       ],
     });

@@ -6,14 +6,14 @@ const { errorEmbed, successEmbed, warningEmbed } = require('../utils/embeds');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('promote')
-    .setDescription('Uyeyi rol hiyerarsisinde bir ust role yukseltir')
-    .addUserOption(opt => opt.setName('uye').setDescription('Yukseltilecek uye').setRequired(true))
+    .setDescription('Üyeyi rol hiyerarsisinde bir sonraki role yükseltir.')
+    .addUserOption(opt => opt.setName('uye').setDescription('Yükseltilecek üye').setRequired(true))
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
 
   async execute(interaction) {
     const member = interaction.options.getMember('uye');
     if (!member) {
-      return interaction.reply({ embeds: [errorEmbed('Bu uye sunucuda bulunamadi.')], ephemeral: true });
+      return interaction.reply({ embeds: [errorEmbed('Bu uye sunucuda bulunamadı.')], ephemeral: true });
     }
 
     const assignableRoles = interaction.guild.roles.cache
@@ -21,7 +21,7 @@ module.exports = {
       .sort((a, b) => a.position - b.position);
 
     if (assignableRoles.size === 0) {
-      return interaction.reply({ embeds: [warningEmbed('Rol Yok', 'Sunucuda atanabilir rol bulunamadi.')], ephemeral: true });
+      return interaction.reply({ embeds: [warningEmbed('Rol Yok', 'Sunucuda atanabilir rol bulunamadı.')], ephemeral: true });
     }
 
     const rolesArray = [...assignableRoles.values()];
@@ -50,11 +50,11 @@ module.exports = {
         await member.roles.remove(currentTop, `Promote - Yetkili: ${interaction.user.tag}`);
       }
     } catch {
-      return interaction.reply({ embeds: [errorEmbed('Rol degistirilirken bir hata olustu.')], ephemeral: true });
+      return interaction.reply({ embeds: [errorEmbed('Rol Değiştirilirken bir Hata Oluştu.')], ephemeral: true });
     }
 
-    const embed = successEmbed('Uye Yukseltildi', `**${member.user.tag}** artik **${nextRole.name}** rolune sahip.`)
-      .addFields({ name: 'Onceki Rol', value: currentTop ? currentTop.name : 'Yoktu', inline: true })
+    const embed = successEmbed('Uye Yukseltildi', `**${member.user.tag}** artık **${nextRole.name}** rolune sahip.`)
+      .addFields({ name: 'Önceki Rol', value: currentTop ? currentTop.name : 'Yoktu', inline: true })
       .setFooter({ text: `Yetkili: ${interaction.user.tag}` })
       .setTimestamp();
 

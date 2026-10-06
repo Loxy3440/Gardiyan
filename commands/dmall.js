@@ -26,7 +26,7 @@ module.exports = {
       embeds: [
         new EmbedBuilder()
           .setTitle('Gonderiliyor...')
-          .setDescription(`**${members.size}** uyeye mesaj gonderiliyor, bu biraz zaman alabilir.`)
+          .setDescription(`**${members.size}** Üyeye mesaj gönderiliyor biraz zaman alabilir..`)
           .setColor(0x5865f2),
       ],
     });

@@ -20,7 +20,7 @@ module.exports = {
     if (!content && !attachment) {
       return interaction.reply({ embeds: [warningEmbed('Eksik Bilgi', 'En az bir mesaj veya dosya eklemelisin.')], ephemeral: true });
     }
-
+   // tüm mesajları yazım hatalarını düzenliyorum
     try {
       // Kimin kullandigi belli olmasin diye interaction.reply degil, dogrudan channel.send kullaniyoruz
       await channel.send({
@@ -28,9 +28,9 @@ module.exports = {
         files: attachment ? [attachment.url] : [],
       });
     } catch {
-      return interaction.reply({ embeds: [errorEmbed('Mesaj gonderilirken bir hata olustu.')], ephemeral: true });
+      return interaction.reply({ embeds: [errorEmbed('Mesaj gönderilirken bir hata oluştu.')], ephemeral: true });
     }
 
-    await interaction.reply({ content: `Mesaj ${channel} kanalina gonderildi.`, ephemeral: true });
+    await interaction.reply({ content: `Mesaj ${channel} kanalına gönderildi.`, ephemeral: true });
   },
 };

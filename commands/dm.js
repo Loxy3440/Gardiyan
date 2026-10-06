@@ -4,7 +4,7 @@ const { errorEmbed, successEmbed, warningEmbed } = require('../utils/embeds');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('dm')
-    .setDescription('Bir kullaniciya ozel mesaj gonderir')
+    .setDescription('Bir kullanıcıya DM gönderir')
     .addUserOption(opt => opt.setName('kullanici').setDescription('Mesaj gonderilecek kullanici').setRequired(true))
     .addStringOption(opt => opt.setName('mesaj').setDescription('Gonderilecek mesaj').setRequired(false))
     .addAttachmentOption(opt => opt.setName('dosya').setDescription('Ek dosya/resim').setRequired(false))

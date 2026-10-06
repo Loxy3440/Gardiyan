@@ -20,8 +20,8 @@ function buildSelectRow() {
     .setPlaceholder('Bir islem sec...')
     .addOptions(
       { label: 'Kanal Ekle', value: 'add', emoji: '➕' },
-      { label: 'Kanal Duzenle', value: 'edit', emoji: '✏️' },
-      { label: 'Kanal Sil', value: 'remove', emoji: '🗑️' },
+      { label: 'Kanal Duzenle', value: 'edit', emoji: '<:984149edit:1557005371066024076>' },
+      { label: 'Kanal Sil', value: 'remove', emoji: '<:delete:1556735111129731072>' },
     );
 
   return new ActionRowBuilder().addComponents(menu);

@@ -118,8 +118,8 @@ async function handleInfo(interaction) {
     .setTitle(`Ban Bilgisi - ${record.userTag}`)
     .setColor(stillBanned ? 0xed4245 : 0x99aab5)
     .addFields(
-      { name: 'Kullanici', value: `${record.userTag} (${record.userId})` },
-      { name: 'Durum', value: stillBanned ? 'Hala Yasakli' : 'Yasak Kaldirilmis (kayit gecmisi)', inline: true },
+      { name: 'Kullanıcı', value: `${record.userTag} (${record.userId})` },
+      { name: 'Durum', value: stillBanned ? 'Hala Yasaklı' : 'Yasak Kaldırılmış (Kayıt geçmişi)', inline: true },
       { name: 'Sebep', value: record.reason || 'Sebep belirtilmedi' },
       { name: 'Yetkili', value: `<@${record.moderatorId}>`, inline: true },
     )
@@ -128,10 +128,10 @@ async function handleInfo(interaction) {
   if (record.evidenceUrl) {
     embed.setImage(record.evidenceUrl);
   } else {
-    embed.addFields({ name: 'Kanit', value: 'Bu ban icin kanit yuklenmemis.' });
+    embed.addFields({ name: 'Kanit', value: 'Bu ban için kanıt yüklenmemiştir.' });
   }
 
-  embed.setFooter({ text: 'Bu bilgi 5 dakika boyunca 10 saniyede bir otomatik guncellenir.' });
+  embed.setFooter({ text: 'Bu bilgi 5 dakika boyunca 10 saniyede bir otomatik güncellenir.' });
 
   const message = await interaction.editReply({ embeds: [embed] });
 
@@ -155,7 +155,7 @@ async function handleInfo(interaction) {
 
     const refreshedEmbed = EmbedBuilder.from(embed)
       .setColor(currentlyBanned ? 0xed4245 : 0x99aab5)
-      .spliceFields(1, 1, { name: 'Durum', value: currentlyBanned ? 'Hala Yasakli' : 'Yasak Kaldirilmis (kayit gecmisi)', inline: true });
+      .spliceFields(1, 1, { name: 'Durum', value: currentlyBanned ? 'Hala Yasaklı' : 'Yasak Kaldırılmış (Kayıt geçmişi)', inline: true });
 
     await message.edit({ embeds: [refreshedEmbed] }).catch(() => clearInterval(interval));
 

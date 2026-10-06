@@ -4,9 +4,9 @@ const { errorEmbed, successEmbed, warningEmbed } = require('../utils/embeds');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('unban')
-    .setDescription('Yasakli bir kullaniciyi affeder')
-    .addStringOption(opt => opt.setName('kullanici_id').setDescription('Yasakli kullanicinin ID numarasi').setRequired(true))
-    .addStringOption(opt => opt.setName('sebep').setDescription('Affetme sebebi').setRequired(false))
+    .setDescription('Yasaklı kullanıcının banını kaldırır')
+    .addStringOption(opt => opt.setName('kullanici_id').setDescription('Yasaklı kullanıcının ID numarası').setRequired(true))
+    .addStringOption(opt => opt.setName('sebep').setDescription('unban sebebi').setRequired(false))
     .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
 
   async execute(interaction) {
@@ -14,7 +14,7 @@ module.exports = {
     const reason = interaction.options.getString('sebep') || 'Sebep belirtilmedi';
 
     if (!/^\d{15,25}$/.test(userId)) {
-      return interaction.reply({ embeds: [warningEmbed('Gecersiz ID', 'Kullanici ID numarasi sadece rakamlardan olusmali.')], ephemeral: true });
+      return interaction.reply({ embeds: [warningEmbed('Geçersiz ID', 'Kullanıcı ID numarası sadece rakamlardan oluşmalı.')], ephemeral: true });
     }
 
     await interaction.deferReply();
@@ -23,16 +23,16 @@ module.exports = {
     try {
       banEntry = await interaction.guild.bans.fetch(userId);
     } catch {
-      return interaction.editReply({ embeds: [warningEmbed('Bulunamadi', 'Bu kullanici yasakli degil veya bulunamadi.')] });
+      return interaction.editReply({ embeds: [warningEmbed('Bulunamadı', 'Bu kullanıcı yasaklı değil veya bulunamadı.')] });
     }
 
     try {
       await interaction.guild.bans.remove(userId, reason);
     } catch {
-      return interaction.editReply({ embeds: [errorEmbed('Yasak kaldirma islemi basarisiz oldu.')] });
+      return interaction.editReply({ embeds: [errorEmbed('Yasak kaldırma işlemi başarısız oldu.')] });
     }
 
-    const embed = successEmbed('Yasak Kaldirildi', `**${banEntry.user.tag}** artik sunucuya tekrar katilabilir.`)
+    const embed = successEmbed('Yasak kaldırıldı', `**${banEntry.user.tag}** artik sunucuya tekrar katılabilir.`)
       .addFields({ name: 'Sebep', value: reason })
       .setFooter({ text: `Yetkili: ${interaction.user.tag}` })
       .setTimestamp();

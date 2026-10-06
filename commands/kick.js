@@ -16,23 +16,23 @@ module.exports = {
     const reason = interaction.options.getString('sebep') || 'Sebep belirtilmedi';
 
     if (!(attachment.contentType || '').startsWith('image/')) {
-      return interaction.reply({ embeds: [warningEmbed('Kanit Gecersiz', 'Ekledigin dosya bir resim olmali.')], ephemeral: true });
+      return interaction.reply({ embeds: [warningEmbed('Kanit Gecersiz', 'Ekledigin dosya bir resim olmalı.')], ephemeral: true });
     }
 
     if (!member) {
-      return interaction.reply({ embeds: [errorEmbed('Bu uye sunucuda bulunamadi.')], ephemeral: true });
+      return interaction.reply({ embeds: [errorEmbed('Bu uye sunucuda bulunamadı.')], ephemeral: true });
     }
 
     if (member.id === interaction.user.id) {
-      return interaction.reply({ embeds: [warningEmbed('Gecersiz', 'Kendini atamazsin.')], ephemeral: true });
+      return interaction.reply({ embeds: [warningEmbed('Geçersiz', 'Kendini atamazsın.')], ephemeral: true });
     }
 
     if (member.roles.highest.position >= interaction.member.roles.highest.position && interaction.guild.ownerId !== interaction.user.id) {
-      return interaction.reply({ embeds: [warningEmbed('Yetersiz Rol', 'Bu uyenin rolu seninkine esit veya yuksek.')], ephemeral: true });
+      return interaction.reply({ embeds: [warningEmbed('Yetersiz Rol', 'Bu üyenin rolü seninkine eşit veya daha yüksek.')], ephemeral: true });
     }
 
     if (!member.kickable) {
-      return interaction.reply({ embeds: [errorEmbed('Bu uyeyi atamiyorum, rol hiyerarsisi buna izin vermiyor.')], ephemeral: true });
+      return interaction.reply({ embeds: [errorEmbed('Bu üyeyi atamıyorum rol hiyerarşisi buna izin vermiyor.')], ephemeral: true });
     }
 
     await interaction.deferReply();
@@ -55,13 +55,13 @@ module.exports = {
     try {
       await member.kick(reason);
     } catch {
-      return interaction.editReply({ embeds: [errorEmbed('Atma islemi basarisiz oldu.')] });
+      return interaction.editReply({ embeds: [errorEmbed('Atma işlemi başarısız oldu.')] });
     }
 
-    const resultEmbed = successEmbed('Uye Atildi', `**${member.user.tag}** sunucudan atildi.`)
+    const resultEmbed = successEmbed('Üye Atıldı', `**${member.user.tag}** sunucudan atıldı.`)
       .addFields(
         { name: 'Sebep', value: reason },
-        { name: 'DM', value: dmSent ? 'Gonderildi' : 'Gonderilemedi', inline: true },
+        { name: 'DM', value: dmSent ? 'Gönderildi' : 'Gönderilemedi', inline: true },
       )
       .setImage(attachment.url)
       .setFooter({ text: `Yetkili: ${interaction.user.tag}` })

@@ -4,7 +4,7 @@ const { errorEmbed, successEmbed, warningEmbed } = require('../utils/embeds');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('setnick')
-    .setDescription('Bir uyenin takma adini degistirir')
+    .setDescription('Bir kullanıcının takma adını değiştirir')
     .addUserOption(opt => opt.setName('uye').setDescription('Takma adi degistirilecek uye').setRequired(true))
     .addStringOption(opt => opt.setName('yeni_isim').setDescription('Yeni takma ad (max 32 karakter)').setRequired(true).setMaxLength(32))
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageNicknames),
@@ -14,11 +14,11 @@ module.exports = {
     const newNick = interaction.options.getString('yeni_isim');
 
     if (!member) {
-      return interaction.reply({ embeds: [errorEmbed('Bu uye sunucuda bulunamadi.')], ephemeral: true });
+      return interaction.reply({ embeds: [errorEmbed('Bu kullanıcı sunucuda bulunamadı.')], ephemeral: true });
     }
 
     if (member.roles.highest.position >= interaction.member.roles.highest.position && interaction.guild.ownerId !== interaction.user.id) {
-      return interaction.reply({ embeds: [warningEmbed('Yetersiz Rol', 'Bu uyenin rolu seninkine esit veya yuksek.')], ephemeral: true });
+      return interaction.reply({ embeds: [warningEmbed('Yetersiz Rol', 'Bu kullanıcının rolü seninkine eşit veya daha yüksek.')], ephemeral: true });
     }
 
     const oldNick = member.displayName;
@@ -26,7 +26,7 @@ module.exports = {
     try {
       await member.setNickname(newNick, `Yetkili: ${interaction.user.tag}`);
     } catch {
-      return interaction.reply({ embeds: [errorEmbed('Takma ad degistirilirken bir hata olustu. (Rol hiyerarsisi buna izin vermiyor olabilir)')], ephemeral: true });
+      return interaction.reply({ embeds: [errorEmbed('Takma ad değiştirilirken bir hata oluştu. (Rol hiyerarsisi buna izin vermiyor olabilir)')], ephemeral: true });
     }
 
     const embed = successEmbed('Takma Ad Degistirildi', `**${oldNick}** → **${newNick}**`)

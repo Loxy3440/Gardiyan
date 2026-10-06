@@ -212,11 +212,11 @@ module.exports = {
       }
 
       if (interaction.customId === 'auto_clear_no') {
-        return interaction.update({ content: 'Vazgecildi, hicbir sey silinmedi.', components: [] });
+        return interaction.update({ content: 'Vazgecildi, hiçbir şey silinmedi.', components: [] });
       }
 
       await setConfig(interaction.guild.id, { autoResponses: [] });
-      return interaction.update({ content: '🧹 Tum otomatik mesajlar silindi. `/auto` ile tekrar bakabilirsin.', components: [] });
+      return interaction.update({ content: '🧹 Tüm otomatik mesajlar silindi. `/auto` ile tekrar bakabilirsin.', components: [] });
     }
 
     // ---------- MENTION MENUSU (dropdown) ----------
@@ -239,7 +239,7 @@ module.exports = {
           .setStyle(TextInputStyle.Paragraph)
           .setRequired(false)
           .setMaxLength(1000)
-          .setPlaceholder('ornek: Merhaba {user}, nasil yardimci olabilirim?');
+          .setPlaceholder('örnek: Merhaba {user}, nasıl yardımcı olabilirim?');
 
         modal.addComponents(new ActionRowBuilder().addComponents(textInput));
         return interaction.showModal(modal);
@@ -335,7 +335,7 @@ module.exports = {
       if (selected === 'remove_mentiontrigger') {
         const config = await getConfig(interaction.guild.id);
         if (!config.mentionTriggers.length) {
-          return interaction.reply({ embeds: [errorEmbed('Silinecek herhangi bir ozel etiketlenme cevabi yok.')], ephemeral: true });
+          return interaction.reply({ embeds: [errorEmbed('Silinecek herhangi bir özel etiketlenme cevabı yok.')], ephemeral: true });
         }
 
         const removeMenu = new StringSelectMenuBuilder()
@@ -402,7 +402,7 @@ module.exports = {
       await removeMentionTrigger(interaction.guild.id, trigger);
 
       return interaction.update({
-        content: `Ozel etiketlenme cevabi silindi: \`${trigger}\``,
+        content: `Özel etikletlenme cevabı silindi: \`${trigger}\``,
         components: [],
       });
     }
@@ -421,10 +421,10 @@ module.exports = {
           .setCustomId('setactivity_type_select')
           .setPlaceholder('Aktivite turunu sec...')
           .addOptions(
-            { label: 'Oynuyor (Playing)', value: 'PLAYING', emoji: '🎮' },
-            { label: 'Izliyor (Watching)', value: 'WATCHING', emoji: '📺' },
-            { label: 'Dinliyor (Listening)', value: 'LISTENING', emoji: '🎧' },
-            { label: 'Yarisiyor (Competing)', value: 'COMPETING', emoji: '🏆' },
+            { label: 'Oynuyor (Playing)', value: 'PLAYING', emoji: '<:114361playing:1557027335818051674>' },
+            { label: 'Izliyor (Watching)', value: 'WATCHING', emoji: '<:99270bearpeek:1557027531016765511>' },
+            { label: 'Dinliyor (Listening)', value: 'LISTENING', emoji: '<:8945voiceheadphones:1557027795031298188>' },
+            { label: 'Yarisiyor (Competing)', value: 'COMPETING', emoji: '<:55902trophy:1557027982789443694>' },
           );
 
         return interaction.reply({
@@ -506,7 +506,7 @@ module.exports = {
 
       const setactivityCmd = interaction.client.commands.get('setactivity');
       return interaction.reply({
-        embeds: [successEmbed('Aktivite Eklendi', `**${setactivityCmd.TYPE_LABELS[type] || type}** - ${text} eklendi.\nGuncel listeyi gormek icin /setactivity komutunu tekrar calistir.`)],
+        embeds: [successEmbed('Aktivite Eklendi', `**${setactivityCmd.TYPE_LABELS[type] || type}** - ${text} eklendi.\nGüncel listeyi gormek icin /setactivity komutunu tekrar calistir.`)],
         ephemeral: true,
       });
     }
@@ -526,14 +526,14 @@ module.exports = {
       const seconds = parseInt(raw, 10);
 
       if (!seconds || seconds < 5) {
-        return interaction.reply({ embeds: [errorEmbed('Gecerli bir sure gir (en az 5 saniye).')], ephemeral: true });
+        return interaction.reply({ embeds: [errorEmbed('Geçerli bir süre gir (en az 5 saniye).')], ephemeral: true });
       }
 
       await setActivityConfig({ intervalSeconds: seconds });
       await startActivityRotation(interaction.client);
 
       return interaction.reply({
-        embeds: [successEmbed('Sure Guncellendi', `Gecis suresi ${seconds} saniye olarak ayarlandi.`)],
+        embeds: [successEmbed('Sure Güncellendi', `Geçiş süresi ${seconds} saniye olarak ayarlandı.`)],
         ephemeral: true,
       });
     }
@@ -549,7 +549,7 @@ module.exports = {
       if (selected === 'set_role_player') {
         const roleSelect = new RoleSelectMenuBuilder()
           .setCustomId('autorole_role_select_player')
-          .setPlaceholder('Oyunculara verilecek rolu sec...');
+          .setPlaceholder('Oyunculara verilecek rolü seç...');
 
         return interaction.update({ components: [new ActionRowBuilder().addComponents(roleSelect)] });
       }
@@ -557,7 +557,7 @@ module.exports = {
       if (selected === 'set_role_bot') {
         const roleSelect = new RoleSelectMenuBuilder()
           .setCustomId('autorole_role_select_bot')
-          .setPlaceholder('Botlara verilecek rolu sec...');
+          .setPlaceholder('Botlara verilecek rolü seç...');
 
         return interaction.update({ components: [new ActionRowBuilder().addComponents(roleSelect)] });
       }
@@ -612,7 +612,7 @@ module.exports = {
           .setStyle(TextInputStyle.Short)
           .setRequired(true)
           .setMaxLength(32)
-          .setPlaceholder('ornek: 123456789012345678');
+          .setPlaceholder('örnek: 123456789012345678');
 
         const messageInput = new TextInputBuilder()
           .setCustomId('channelbip_message')
@@ -620,7 +620,7 @@ module.exports = {
           .setStyle(TextInputStyle.Paragraph)
           .setRequired(false)
           .setMaxLength(1000)
-          .setPlaceholder('ornek: {user} sunucuya hos geldin!');
+          .setPlaceholder('örnek: {user} sunucuya hoş geldin!');
 
         modal.addComponents(
           new ActionRowBuilder().addComponents(idInput),
@@ -633,12 +633,12 @@ module.exports = {
       if (selected === 'edit') {
         const config = await getConfig(interaction.guild.id);
         if (!config.channelBips.length) {
-          return interaction.reply({ embeds: [errorEmbed('Duzenlenecek herhangi bir kanal yok.')], ephemeral: true });
+          return interaction.reply({ embeds: [errorEmbed('Düzenlenecek herhangi bir kanal yok.')], ephemeral: true });
         }
 
         const editMenu = new StringSelectMenuBuilder()
           .setCustomId('channelbip_edit_select')
-          .setPlaceholder('Duzenlenecek kanali sec...')
+          .setPlaceholder('Düzenlenecek kanali sec...')
           .addOptions(
             config.channelBips.slice(0, 25).map(c => ({
               label: `#${c.channelId}`.slice(0, 100),
@@ -681,13 +681,13 @@ module.exports = {
 
       const channel = interaction.guild.channels.cache.get(channelId);
       if (!channel || !channel.isTextBased()) {
-        return interaction.reply({ embeds: [errorEmbed('Bu ID ile bir metin kanali bulunamadi. ID yi kontrol et.')], ephemeral: true });
+        return interaction.reply({ embeds: [errorEmbed('Bu ID ile bir metin kanalı bulunamadı. ID yi kontrol et.')], ephemeral: true });
       }
 
       await upsertChannelBip(interaction.guild.id, channelId, message);
 
       await interaction.reply({
-        embeds: [successEmbed('Kanal Eklendi', `${channel} kanali eklendi. Yeni uye katilinca buraya mesaj gidecek.`)],
+        embeds: [successEmbed('Kanal Eklendi', `${channel} kanalı eklendi. Yeni üye katılınca buraya mesaj gidecek.`)],
         ephemeral: true,
       });
 
@@ -705,7 +705,7 @@ module.exports = {
       const config = await getConfig(interaction.guild.id);
       const entry = config.channelBips.find(c => c.channelId === channelId);
 
-      const modal = new ModalBuilder().setCustomId(`channelbip_modal_edit_${channelId}`).setTitle('Kanal Mesajini Duzenle');
+      const modal = new ModalBuilder().setCustomId(`channelbip_modal_edit_${channelId}`).setTitle('Kanal Mesajını Düzenle');
 
       const messageInput = new TextInputBuilder()
         .setCustomId('channelbip_message')
@@ -727,7 +727,7 @@ module.exports = {
       await upsertChannelBip(interaction.guild.id, channelId, message);
 
       return interaction.reply({
-        embeds: [successEmbed('Guncellendi', `<#${channelId}> icin mesaj guncellendi.`)],
+        embeds: [successEmbed('Güncellendi', `<#${channelId}> için mesaj güncellendi.`)],
         ephemeral: true,
       });
     }
@@ -737,7 +737,7 @@ module.exports = {
       const channelId = interaction.values[0];
       await removeChannelBip(interaction.guild.id, channelId);
 
-      return interaction.update({ content: `Kanal kaldirildi: <#${channelId}>`, components: [] });
+      return interaction.update({ content: `Kanal kaldırıldı: <#${channelId}>`, components: [] });
     }
 
     // ---------- BANLIST YENILEME BUTONU ----------
@@ -749,7 +749,7 @@ module.exports = {
       try {
         result = await banlistCmd.buildBanListEmbed(interaction.guild);
       } catch {
-        return interaction.followUp({ embeds: [errorEmbed('Yasakli kullanicilar alinirken bir hata olustu.')], ephemeral: true });
+        return interaction.followUp({ embeds: [errorEmbed('Yasaklı kullanıcılar alınırken bir hata oluştu.')], ephemeral: true });
       }
 
       if (result.empty) {
@@ -786,13 +786,13 @@ module.exports = {
 
       const member = await interaction.guild.members.fetch(userId).catch(() => null);
       if (member) {
-        await member.roles.remove(roleId, `Geri Al butonu - Yetkili: ${interaction.user.tag}`).catch(() => {});
+        await member.roles.remove(roleId, `geri Al butonu - Yetkili: ${interaction.user.tag}`).catch(() => {});
       }
       await removeTempRole(interaction.guild.id, userId, roleId).catch(() => {});
 
       const disabledRow = disableButtons(interaction, 'Geri Alindi');
-      const embed = successEmbed('Rol Geri Alindi', 'Rol basariyla geri alindi.')
-        .setFooter({ text: `Islemi yapan: ${interaction.user.tag}` })
+      const embed = successEmbed('Rol Geri Alındı', 'Rol başarıyla geri alındı.')
+        .setFooter({ text: `İşlemi yapan: ${interaction.user.tag}` })
         .setTimestamp();
 
       return interaction.editReply({ embeds: [embed], components: [disabledRow] });
@@ -808,12 +808,12 @@ module.exports = {
 
       const member = await interaction.guild.members.fetch(userId).catch(() => null);
       if (member) {
-        await member.roles.add(roleId, `Geri Ver butonu - Yetkili: ${interaction.user.tag}`).catch(() => {});
+        await member.roles.add(roleId, `geri Ver butonu - Yetkili: ${interaction.user.tag}`).catch(() => {});
       }
 
       const disabledRow = disableButtons(interaction, 'Geri Verildi');
-      const embed = successEmbed('Rol Geri Verildi', 'Rol basariyla geri verildi.')
-        .setFooter({ text: `Islemi yapan: ${interaction.user.tag}` })
+      const embed = successEmbed('Rol Geri Verildi', 'Rol başarıyla geri verildi.')
+        .setFooter({ text: `İşlemi yapan: ${interaction.user.tag}` })
         .setTimestamp();
 
       return interaction.editReply({ embeds: [embed], components: [disabledRow] });
@@ -828,8 +828,8 @@ module.exports = {
       const isConfirm = interaction.customId === 'closebot_confirm';
 
       const embed = successEmbed(
-        isConfirm ? 'Bot Kapatiliyor' : 'Islem Iptal Edildi',
-        isConfirm ? 'Bot birazdan kapanacak.' : 'Bot calismaya devam ediyor.',
+        isConfirm ? 'Bot kapatılıyor' : 'İşlem İptal Edildi',
+        isConfirm ? 'Bot birazdan kapanacak.' : 'Bot çalışmaya devam ediyor.',
       ).setColor(isConfirm ? 0xed4245 : 0x5865f2);
 
       const disabledRow = disableButtons(interaction);
@@ -861,18 +861,18 @@ module.exports = {
         banEntry = await interaction.guild.bans.fetch(targetId);
       } catch {
         const disabledRow = disableButtons(interaction, 'Already Unbanned');
-        return interaction.editReply({ embeds: [errorEmbed('Bu kullanici zaten yasakli degil.')], components: [disabledRow] });
+        return interaction.editReply({ embeds: [errorEmbed('Bu kullanıcı zaten yasaklı değil.')], components: [disabledRow] });
       }
 
       try {
-        await interaction.guild.bans.remove(targetId, `Unban butonu - Yetkili: ${interaction.user.tag}`);
+        await interaction.guild.bans.remove(targetId, `unban butonu - Yetkili: ${interaction.user.tag}`);
       } catch {
-        return interaction.followUp({ embeds: [errorEmbed('Yasak kaldirilirken bir hata olustu.')], ephemeral: true });
+        return interaction.followUp({ embeds: [errorEmbed('Yasak kaldırilirken bir hata oluştu.')], ephemeral: true });
       }
 
       const disabledRow = disableButtons(interaction, 'Unbanned');
-      const embed = successEmbed('Yasak Kaldirildi', `**${banEntry.user.tag}** artik sunucuya tekrar katilabilir.`)
-        .setFooter({ text: `Islemi yapan: ${interaction.user.tag}` })
+      const embed = successEmbed('Yasak kaldırıldı', `**${banEntry.user.tag}** artık sunucuya tekrar katılabilir.`)
+        .setFooter({ text: `İşlemi yapan: ${interaction.user.tag}` })
         .setTimestamp();
 
       return interaction.editReply({ embeds: [embed], components: [disabledRow] });
@@ -887,20 +887,20 @@ module.exports = {
 
       const member = await interaction.guild.members.fetch(targetId).catch(() => null);
       if (!member) {
-        return interaction.followUp({ embeds: [errorEmbed('Bu uye artik sunucuda degil.')], ephemeral: true });
+        return interaction.followUp({ embeds: [errorEmbed('Bu üye artık sunucuda değil.')], ephemeral: true });
       }
 
       try {
-        await member.timeout(null, `Unmute butonu - Yetkili: ${interaction.user.tag}`);
+        await member.timeout(null, `unmute butonu - Yetkili: ${interaction.user.tag}`);
       } catch {
-        return interaction.followUp({ embeds: [errorEmbed('Susturma kaldirilirken bir hata olustu.')], ephemeral: true });
+        return interaction.followUp({ embeds: [errorEmbed('Susturma kaldırılırken bir hata oluştu.')], ephemeral: true });
       }
 
       clearActiveTimer(`mute_${interaction.guild.id}_${targetId}`);
 
       const disabledRow = disableButtons(interaction, 'Unmuted');
-      const embed = successEmbed('Susturma Kaldirildi', `**${member.user.tag}** artik tekrar konusabilir.`)
-        .setFooter({ text: `Islemi yapan: ${interaction.user.tag}` })
+      const embed = successEmbed('Susturma Kaldırıldı', `**${member.user.tag}** artık tekrar konusabilir.`)
+        .setFooter({ text: `İşlemi yapan: ${interaction.user.tag}` })
         .setTimestamp();
 
       return interaction.editReply({ embeds: [embed], components: [disabledRow] });
@@ -915,22 +915,22 @@ module.exports = {
 
       const channel = interaction.guild.channels.cache.get(targetId);
       if (!channel) {
-        return interaction.followUp({ embeds: [errorEmbed('Kanal bulunamadi.')], ephemeral: true });
+        return interaction.followUp({ embeds: [errorEmbed('Kanal bulunamadı.')], ephemeral: true });
       }
 
       try {
         await channel.permissionOverwrites.edit(
           interaction.guild.roles.everyone,
           { SendMessages: null },
-          { reason: `Unlock butonu - Yetkili: ${interaction.user.tag}` },
+          { reason: `unlock butonu - Yetkili: ${interaction.user.tag}` },
         );
       } catch {
-        return interaction.followUp({ embeds: [errorEmbed('Kanal kilidi acilirken bir hata olustu.')], ephemeral: true });
+        return interaction.followUp({ embeds: [errorEmbed('Kanal kilidi açılırken bir hata oluştu.')], ephemeral: true });
       }
 
       const disabledRow = disableButtons(interaction, 'Unlocked');
-      const embed = successEmbed('Kanal Kilidi Acildi', `${channel} artik herkes tarafindan kullanilabilir.`)
-        .setFooter({ text: `Islemi yapan: ${interaction.user.tag}` })
+      const embed = successEmbed('Kanal Kilidi Açıldı', `${channel} artık herkes tarafından kullanilabilir.`)
+        .setFooter({ text: `İşlemi yapan: ${interaction.user.tag}` })
         .setTimestamp();
 
       return interaction.editReply({ embeds: [embed], components: [disabledRow] });

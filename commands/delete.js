@@ -20,7 +20,7 @@ module.exports = {
       deleted = await interaction.channel.bulkDelete(amount, true);
     } catch {
       return interaction.editReply({
-        embeds: [errorEmbed('Mesajlar silinirken bir hata olustu. (14 gunden eski mesajlar toplu silinemez)')],
+        embeds: [errorEmbed('Mesaj silinirken hata oldu. 14 günden eski mesajlar silinemez.')],
       });
     }
 

@@ -11,12 +11,12 @@ const TYPE_LABELS = {
 function buildStatusEmbed(config) {
   const list = config.list.length
     ? config.list.map((a, i) => `${i + 1}. **${TYPE_LABELS[a.type] || a.type}** - ${a.text}`).join('\n')
-    : 'Tanimli aktivite yok, varsayilan olarak "/help" (Izliyor) gosterilir.';
+    : 'Tanımlı Aktivite yok, varsayilan olarak "/help" (Izliyor) gosterilir.';
 
   return new EmbedBuilder()
     .setTitle('Bot Aktivitesi (Setactivity)')
     .setColor(0x5865f2)
-    .setDescription('Botun durum yazisi (Oynuyor/Izliyor/Dinliyor/Yarisiyor) asagidaki listede sirayla doner.\n⚠️ Bu ayar tum sunucular icin gecerlidir (global).')
+    .setDescription('Botun durum yazısı (Oynuyor/Izliyor/Dinliyor/Yarışıyor) aşağıdaki listede sırayla döner.\n Bu ayar tum sunucular icin gecerlidir (global).')
     .addFields(
       { name: `Aktiviteler (${config.list.length})`, value: list },
       { name: 'Gecis Suresi', value: `${config.intervalSeconds} saniye`, inline: true },
@@ -29,9 +29,9 @@ function buildSelectRow() {
     .setCustomId('setactivity_menu')
     .setPlaceholder('Bir islem sec...')
     .addOptions(
-      { label: 'Aktivite Ekle', value: 'add_activity', emoji: '➕' },
-      { label: 'Aktivite Sil', value: 'remove_activity', emoji: '🗑️' },
-      { label: 'Gecis Suresini Ayarla', value: 'set_interval', emoji: '⏱️' },
+      { label: 'Aktivite Ekle', value: 'add_activity', emoji: '<:517044plussign:1556735103097372834>' },
+      { label: 'Aktivite Sil', value: 'remove_activity', emoji: '<:delete:1556735111129731072>' },
+      { label: 'Gecis Suresini Ayarla', value: 'set_interval', emoji: '<:197546clock:1556994064400912435>' },
     );
 
   return new ActionRowBuilder().addComponents(menu);
@@ -40,7 +40,7 @@ function buildSelectRow() {
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('setactivity')
-    .setDescription('Botun aktivite/durum yazisini ve gecis suresini yonetir (global)')
+    .setDescription('Botun aktivite/durum yazısını ve geçiş süresini yönetir (global)')
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
   async execute(interaction) {

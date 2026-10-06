@@ -5,23 +5,23 @@ function buildStatusEmbed(config) {
   return new EmbedBuilder()
     .setTitle('Otomatik Rol (Otorol)')
     .setColor(0x5865f2)
-    .setDescription('Sunucuya yeni katilan uyelere, oyuncu ya da bot olmalarina gore farkli rol otomatik verilir.')
+    .setDescription('Sunucuya yeni katılan üyeler, oyuncu ya da bot olmalarına göre farklı rol otomatik verilir.')
     .addFields(
-      { name: 'Durum', value: config.autoRoleEnabled ? '✅ Acik' : '❌ Kapali', inline: true },
-      { name: 'Oyuncu Rolu', value: config.autoRoleId ? `<@&${config.autoRoleId}>` : 'Ayarlanmadi', inline: true },
-      { name: 'Bot Rolu', value: config.autoRoleBotId ? `<@&${config.autoRoleBotId}>` : 'Ayarlanmadi', inline: true },
+      { name: 'Durum', value: config.autoRoleEnabled ? ' Açık' : ' Kapalı', inline: true },
+      { name: 'Oyuncu Rolu', value: config.autoRoleId ? `<@&${config.autoRoleId}>` : 'Ayarlanmadı', inline: true },
+      { name: 'Bot Rolu', value: config.autoRoleBotId ? `<@&${config.autoRoleBotId}>` : 'Ayarlanmadı', inline: true },
     )
-    .setFooter({ text: 'Asagidaki menuden ayarla' });
+    .setFooter({ text: 'Aşağıdaki menüden ayarla' });
 }
 
 function buildSelectRow() {
   const menu = new StringSelectMenuBuilder()
     .setCustomId('autorole_menu')
-    .setPlaceholder('Bir islem sec...')
+    .setPlaceholder('Bir işlem seç...')
     .addOptions(
-      { label: 'Oyuncu Rolu Ayarla', value: 'set_role_player', emoji: '🙋' },
-      { label: 'Bot Rolu Ayarla', value: 'set_role_bot', emoji: '🤖' },
-      { label: 'Ac/Kapat', value: 'toggle', emoji: '🔁' },
+      { label: 'Oyuncu Rolu Ayarla', value: 'set_role_player', emoji: '<:40421adduser:1556746644693717092>' },
+      { label: 'Bot Rolu Ayarla', value: 'set_role_bot', emoji: '<:310414developer:1556994076077985802>' },
+      { label: 'Ac/Kapat', value: 'toggle', emoji: '<:750227restore:1556735107589742662>' },
     );
 
   return new ActionRowBuilder().addComponents(menu);
@@ -30,7 +30,7 @@ function buildSelectRow() {
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('autorole')
-    .setDescription('Yeni katilan oyuncu ve botlara otomatik verilecek rolleri yonetir')
+    .setDescription('Yeni katılan uyelere ve botlara otomatik rol verir.')
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
 
   async execute(interaction) {

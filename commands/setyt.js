@@ -32,7 +32,7 @@ module.exports = {
     }
     const warnings = [];
     if (!perms.has('MentionEveryone')) {
-      warnings.push(`⚠️ Botun ${target} kanalinda **@everyone etiketleme** yetkisi yok, etiket calismaz. Bota "Herkesi Etiketle" yetkisi ver.`);
+      warnings.push(`⚠️ Botun ${target} kanalinda **@here etiketleme** yetkisi yok, etiket calismaz. Bota "Herkesi Etiketle" yetkisi ver.`);
     }
 
     await interaction.deferReply({ ephemeral: true });

@@ -23,7 +23,7 @@ module.exports = {
     const reason = interaction.options.getString('sebep') || 'Sebep belirtilmedi';
 
     if (!(attachment.contentType || '').startsWith('image/')) {
-      return interaction.reply({ embeds: [warningEmbed('Kanit Gecersiz', 'Ekledigin dosya bir resim olmali.')], ephemeral: true });
+      return interaction.reply({ embeds: [warningEmbed('Kanit Geçersiz', 'Eklediğin dosya bir resim olmali.')], ephemeral: true });
     }
 
     if (!member) {
@@ -32,19 +32,19 @@ module.exports = {
 
     const durationMs = parseDuration(durationInput);
     if (!durationMs) {
-      return interaction.reply({ embeds: [warningEmbed('Gecersiz Sure', 'Sureyi `10m`, `2h`, `1d` seklinde yaz. (s/m/h/d)')], ephemeral: true });
+      return interaction.reply({ embeds: [warningEmbed('Geçersiz Süre', 'Sureyi `10m`, `2h`, `1d` şeklinde yaz. (s/m/h/d)')], ephemeral: true });
     }
 
     if (durationMs > MAX_TIMEOUT_MS) {
-      return interaction.reply({ embeds: [warningEmbed('Sure Cok Uzun', 'En fazla 28 gun susturabilirsin.')], ephemeral: true });
+      return interaction.reply({ embeds: [warningEmbed('Süre Çok Uzun', 'En fazla 28 gün susturabilirsin.')], ephemeral: true });
     }
 
     if (member.id === interaction.user.id) {
-      return interaction.reply({ embeds: [warningEmbed('Gecersiz', 'Kendini susturamazsin.')], ephemeral: true });
+      return interaction.reply({ embeds: [warningEmbed('Geçersiz', 'Kendini susturamazsın.')], ephemeral: true });
     }
 
     if (member.roles.highest.position >= interaction.member.roles.highest.position && interaction.guild.ownerId !== interaction.user.id) {
-      return interaction.reply({ embeds: [warningEmbed('Yetersiz Rol', 'Bu uyenin rolu seninkine esit veya yuksek.')], ephemeral: true });
+      return interaction.reply({ embeds: [warningEmbed('Yetersiz Rol', 'Seçtiğin üye seninkinden daha yüksek bir role sahip.')], ephemeral: true });
     }
 
     if (!member.moderatable) {
@@ -56,15 +56,15 @@ module.exports = {
     try {
       await member.timeout(durationMs, reason);
     } catch {
-      return interaction.editReply({ embeds: [errorEmbed('Susturma islemi basarisiz oldu.')] });
+      return interaction.editReply({ embeds: [errorEmbed('Susturma İşlemi başarısız oldu.')] });
     }
 
     const expiresAt = Date.now() + durationMs;
 
-    const embed = successEmbed('Uye Susturuldu', `**${member.user.tag}** hem sesli hem yazili olarak susturuldu.`)
+    const embed = successEmbed('Üye Susturuldu', `**${member.user.tag}** hem sesli hemde yazılı olarak susturuldu.`)
       .setColor(0xe67e22)
       .addFields(
-        { name: 'Kalan Sure', value: `${formatRemaining(durationMs)} kaldi`, inline: true },
+        { name: 'Kalan Sure', value: `${formatRemaining(durationMs)} kaldı`, inline: true },
         { name: 'Sebep', value: reason },
       )
       .setImage(attachment.url)
@@ -89,7 +89,7 @@ module.exports = {
           .setTimestamp();
 
         const disabledRow = new ActionRowBuilder().addComponents(
-          ButtonBuilder.from(row.components[0]).setDisabled(true).setLabel('Suresi Doldu'),
+          ButtonBuilder.from(row.components[0]).setDisabled(true).setLabel('Süresi Doldu'),
         );
 
         await message.edit({ embeds: [expiredEmbed], components: [disabledRow] }).catch(() => {});
@@ -97,7 +97,7 @@ module.exports = {
       }
 
       const updatedEmbed = EmbedBuilder.from(embed).setFields(
-        { name: 'Kalan Sure', value: `${formatRemaining(remaining)} kaldi`, inline: true },
+        { name: 'Kalan Sure', value: `${formatRemaining(remaining)} kaldı`, inline: true },
         { name: 'Sebep', value: reason },
       );
       await message.edit({ embeds: [updatedEmbed], components: [row] }).catch(() => {});

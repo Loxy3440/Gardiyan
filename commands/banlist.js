@@ -8,7 +8,7 @@ async function buildBanListEmbed(guild) {
   const discordBans = await guild.bans.fetch();
 
   if (!discordBans.size) {
-    return { embed: warningEmbed('Bos Liste', 'Bu sunucuda yasakli kullanici yok.'), empty: true };
+    return { embed: warningEmbed('Boş Liste', 'Bu sunucuda yasaklı kullanıcı yok.'), empty: true };
   }
 
   const records = await getAllBanRecords(guild.id).catch(() => []);
@@ -27,7 +27,7 @@ async function buildBanListEmbed(guild) {
     .setTitle(`Yasakli Kullanicilar (${entries.length})`)
     .setColor(0xed4245)
     .setDescription(shown.join('\n\n'))
-    .setFooter({ text: remaining > 0 ? `+${remaining} kullanici daha (detay icin /ban info kullan)` : 'Detay icin /ban info kullan' })
+    .setFooter({ text: remaining > 0 ? `+${remaining} daha detaylı bilgi için ' /ban info ' komutunu kullanın` : 'Detay için /ban info komutunu kullanın' })
     .setTimestamp();
 
   return { embed, empty: false };
@@ -35,14 +35,14 @@ async function buildBanListEmbed(guild) {
 
 function buildRefreshRow() {
   return new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('banlist_refresh').setEmoji('🔄').setLabel('Yenile').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('banlist_refresh').setEmoji('<a:938761tick:1556735122336653352>').setLabel('Yenile').setStyle(ButtonStyle.Secondary),
   );
 }
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('banlist')
-    .setDescription('Sunucudaki yasakli kullanicilari listeler')
+    .setDescription('Sunucudaki Yasaklı Kullanıcıları Listeler')
     .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
 
   async execute(interaction) {
@@ -52,7 +52,7 @@ module.exports = {
     try {
       result = await buildBanListEmbed(interaction.guild);
     } catch {
-      return interaction.editReply({ embeds: [errorEmbed('Yasakli kullanicilar alinirken bir hata olustu.')] });
+      return interaction.editReply({ embeds: [errorEmbed('Yasaklı Kullanıcılar Listesi alınırken bir hata oluştu.')] });
     }
 
     if (result.empty) {

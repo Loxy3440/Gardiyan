@@ -11,7 +11,7 @@ module.exports = {
       .sort((a, b) => b.position - a.position);
 
     if (!roles.size) {
-      return interaction.editReply('Bu sunucuda tanimli bir rol yok.');
+      return interaction.editReply('Bu sunucuda tanımlı bir rol yok.');
     }
 
     const lines = roles.map(r => `<@&${r.id}> - \`${r.id}\``);
@@ -41,7 +41,7 @@ module.exports = {
     });
 
     if (chunks.length > limitedChunks.length) {
-      embed.setDescription('⚠️ Rol sayisi cok fazla oldugu icin liste kisaltildi.');
+      embed.setDescription('Rol sayısı çok fazla olduğu için liste kısaltıldı.');
     }
 
     await interaction.editReply({ embeds: [embed] });

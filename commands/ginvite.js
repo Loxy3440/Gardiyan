@@ -4,7 +4,7 @@ const { errorEmbed } = require('../utils/embeds');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('ginvite')
-    .setDescription('Botu baska bir sunucuya eklemek icin davet linki olusturur')
+    .setDescription('Botu kendi sunucuna davet etmek icin gerekli linki gosterir')
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
   async execute(interaction) {

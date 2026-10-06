@@ -11,16 +11,16 @@ function buildStatusEmbed(config) {
     .setColor(0x5865f2)
     .setDescription('Bot etiketlenip/yanitlanip asagidaki tetikleyicilerden biri tam olarak yazilirsa, bot /mention yerine bu ozel cevabi gonderir.')
     .addFields({ name: `Tanimli Cevaplar (${config.mentionTriggers.length})`, value: list })
-    .setFooter({ text: 'Asagidaki menuden ekle / sil' });
+    .setFooter({ text: 'Aşağıdaki Menüden ekle / sil' });
 }
 
 function buildSelectRow() {
   const menu = new StringSelectMenuBuilder()
     .setCustomId('setmention_menu')
-    .setPlaceholder('Bir islem sec...')
+    .setPlaceholder('Yönet')
     .addOptions(
-      { label: 'Ozel Cevap Ekle/Guncelle', value: 'add_mentiontrigger', emoji: '💬' },
-      { label: 'Ozel Cevap Sil', value: 'remove_mentiontrigger', emoji: '🗑️' },
+      { label: 'Ekle / Güncelle', value: 'add_mentiontrigger', emoji: '<:517044plussign:1556735103097372834>' },
+      { label: 'Sil', value: 'remove_mentiontrigger', emoji: '<:delete:1556735111129731072>' },
     );
 
   return new ActionRowBuilder().addComponents(menu);

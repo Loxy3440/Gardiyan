@@ -4,7 +4,7 @@ const { buildListView } = require('../utils/eventListUI');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('eventlist')
-    .setDescription('Bekleyen ve aktif eventleri listeler; duzenleme ve silme menusunu acar')
+    .setDescription('Sunucudaki etkinlikleri listeler')
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
 
   async execute(interaction) {

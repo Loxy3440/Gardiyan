@@ -5,21 +5,21 @@ const { clearActiveTimer } = require('../utils/activeTimers');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('unmute')
-    .setDescription("Bir uyenin susturmasini kaldirir")
-    .addUserOption(opt => opt.setName('uye').setDescription('Susturmasi kaldirilacak uye').setRequired(true))
+    .setDescription("Bir kullanıcının susturmasını kaldırır")
+    .addUserOption(opt => opt.setName('kullanıcı').setDescription('Susturması kaldırılacak kullanıcı').setRequired(true))
     .addStringOption(opt => opt.setName('sebep').setDescription('Sebep').setRequired(false))
     .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers),
 
   async execute(interaction) {
-    const member = interaction.options.getMember('uye');
+    const member = interaction.options.getMember('kullanıcı');
     const reason = interaction.options.getString('sebep') || 'Sebep belirtilmedi';
 
     if (!member) {
-      return interaction.reply({ embeds: [errorEmbed('Bu uye sunucuda bulunamadi.')], ephemeral: true });
+      return interaction.reply({ embeds: [errorEmbed('Bu kullanıcı sunucuda bulunamadı.')], ephemeral: true });
     }
 
     if (!member.communicationDisabledUntil || member.communicationDisabledUntil < new Date()) {
-      return interaction.reply({ embeds: [warningEmbed('Susturulmamis', `**${member.user.tag}** su anda susturulmus degil.`)], ephemeral: true });
+      return interaction.reply({ embeds: [warningEmbed('Susturulmamış', `**${member.user.tag}** su anda susturulmuş değil.`)], ephemeral: true });
     }
 
     await interaction.deferReply();
@@ -27,12 +27,12 @@ module.exports = {
     try {
       await member.timeout(null, reason);
     } catch {
-      return interaction.editReply({ embeds: [errorEmbed('Susturma kaldirma islemi basarisiz oldu.')] });
+      return interaction.editReply({ embeds: [errorEmbed('Susturma kaldırma işlemi başarısız oldu.')] });
     }
 
     clearActiveTimer(`mute_${interaction.guild.id}_${member.id}`);
 
-    const embed = successEmbed('Susturma Kaldirildi', `**${member.user.tag}** artik tekrar konusabilir.`)
+    const embed = successEmbed('Susturma Kaldırıldı', `**${member.user.tag}** artık tekrar konuşabilir.`)
       .addFields({ name: 'Sebep', value: reason })
       .setFooter({ text: `Yetkili: ${interaction.user.tag}` })
       .setTimestamp();

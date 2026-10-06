@@ -4,7 +4,7 @@ const { errorEmbed, successEmbed } = require('../utils/embeds');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('lock')
-    .setDescription('Bulundugun kanali kilitler (herkes icin mesaj atmayi kapatir)')
+    .setDescription('Bulunduğun kanalı kilitler')
     .addStringOption(opt => opt.setName('sebep').setDescription('Kilitleme sebebi').setRequired(false))
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels),
 
@@ -18,10 +18,10 @@ module.exports = {
     try {
       await channel.permissionOverwrites.edit(everyoneRole, { SendMessages: false }, { reason });
     } catch {
-      return interaction.editReply({ embeds: [errorEmbed('Kanal kilitlenirken bir hata olustu.')] });
+      return interaction.editReply({ embeds: [errorEmbed('Kanal kilitlenirken bir hata oluştu.')] });
     }
 
-    const embed = successEmbed('Kanal Kilitlendi', `${channel} artik sadece yetkililer tarafindan kullanilabilir.`)
+    const embed = successEmbed('Kanal Kilitlendi', `${channel} artık sadece yetkililer tarafından kullanılabilir.`)
       .setColor(0xed4245)
       .addFields({ name: 'Sebep', value: reason })
       .setFooter({ text: `Yetkili: ${interaction.user.tag}` })

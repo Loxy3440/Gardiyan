@@ -37,7 +37,7 @@ module.exports = {
     const warns = await getWarns(interaction.guild.id, user.id);
 
     const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId(`warnlist_refresh_${user.id}`).setEmoji('🔄').setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId(`warnlist_refresh_${user.id}`).setEmoji('<a:117831tick:1556735093383635094>').setStyle(ButtonStyle.Secondary),
     );
 
     await interaction.editReply({ embeds: [buildEmbed(warns, user)], components: [row] });

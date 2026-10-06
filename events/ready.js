@@ -46,7 +46,7 @@ module.exports = {
 
           const member = await guild.members.fetch(entry.userId).catch(() => null);
           if (member) {
-            await member.roles.remove(entry.roleId, 'Gecici rol suresi doldu').catch(() => {});
+            await member.roles.remove(entry.roleId, 'Geçici rol süresi doldu').catch(() => {});
           }
 
           await removeTempRole(entry.guildId, entry.userId, entry.roleId);

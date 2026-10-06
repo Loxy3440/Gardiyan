@@ -14,29 +14,29 @@ module.exports = {
     const role = interaction.options.getRole('rol');
 
     if (!member) {
-      return interaction.reply({ embeds: [errorEmbed('Bu uye sunucuda bulunamadi.')], ephemeral: true });
+      return interaction.reply({ embeds: [errorEmbed('Bu uye sunucuda bulunamadı.')], ephemeral: true });
     }
 
     if (!member.roles.cache.has(role.id)) {
-      return interaction.reply({ embeds: [warningEmbed('Rol Yok', `**${member.user.tag}** zaten bu role sahip degil.`)], ephemeral: true });
+      return interaction.reply({ embeds: [warningEmbed('Rol Yok', `**${member.user.tag}** zaten bu role sahip değil.`)], ephemeral: true });
     }
 
     if (role.position >= interaction.guild.members.me.roles.highest.position) {
-      return interaction.reply({ embeds: [errorEmbed('Bu rolu alamiyorum, botun rolu yeterince yuksek degil.')], ephemeral: true });
+      return interaction.reply({ embeds: [errorEmbed('Bu rolü alamıyorum, botun rolü yeterince yüksek değil.')], ephemeral: true });
     }
 
     try {
       await member.roles.remove(role, `Yetkili: ${interaction.user.tag}`);
     } catch {
-      return interaction.reply({ embeds: [errorEmbed('Rol alinirken bir hata olustu.')], ephemeral: true });
+      return interaction.reply({ embeds: [errorEmbed('Rol alınırken bir hata oluştu.')], ephemeral: true });
     }
 
-    const embed = successEmbed('Rol Alindi', `**${member.user.tag}** kullanicisindan **${role.name}** rolu alindi.`)
+    const embed = successEmbed('Rol alındı', `**${member.user.tag}** Kullanıcısından **${role.name}** Rolü alındı.`)
       .setFooter({ text: `Yetkili: ${interaction.user.tag}` })
       .setTimestamp();
 
     const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId(`rolgiveback_${member.id}_${role.id}`).setLabel('Geri Ver').setStyle(ButtonStyle.Success),
+      new ButtonBuilder().setCustomId(`rolgiveback_${member.id}_${role.id}`).setLabel('geri ver').setStyle(ButtonStyle.Success),
     );
 
     await interaction.reply({ embeds: [embed], components: [row] });

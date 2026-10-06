@@ -29,9 +29,9 @@ module.exports = {
 
     const total = results.reduce((sum, r) => sum + r.posted, 0);
     const lines = results.map(r => {
-      if (r.status === 'error') return `❌ **${r.title}**: ${r.error}${r.posted ? ` (${r.posted} video atildi)` : ''}`;
-      if (r.status === 'baseline') return `🆕 **${r.title}**: ilk kez okundu, mevcut videolar kaydedildi (paylasilmadi)`;
-      if (r.posted) return `✅ **${r.title}**: ${r.posted} yeni video paylasildi${r.skipped ? ` (${r.skipped} eski video atlandi)` : ''}`;
+      if (r.status === 'error') return `❌ **${r.title}**: ${r.error}${r.posted ? ` (${r.posted} video atıldı)` : ''}`;
+      if (r.status === 'baseline') return `🆕 **${r.title}**: ilk kez okundu, mevcut videolar kaydedildi (paylaşılmadı)`;
+      if (r.posted) return `<:881969youtube:1557023216801943663> **${r.title}**: ${r.posted} yeni video paylaşıldı ${r.skipped ? ` (${r.skipped} eski video atlandi)` : ''}`;
       return `➖ **${r.title}**: yeni video yok`;
     });
 

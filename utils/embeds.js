@@ -3,7 +3,7 @@ const { EmbedBuilder } = require('discord.js');
 function permissionDeniedEmbed() {
   return new EmbedBuilder()
     .setTitle('Yetkin Yok')
-    .setDescription('Bu komutu kullanmak icin yetkin yok.')
+    .setDescription('Bu komutu kullanmaya yetkin yok.')
     .setColor(0xed4245);
 }
 

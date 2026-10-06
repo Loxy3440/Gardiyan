@@ -3,14 +3,14 @@ const { getConfig } = require('../utils/guildConfig');
 
 function buildStatusEmbed(config) {
   return new EmbedBuilder()
-    .setTitle('Etiketlenme Cevabi (Mention)')
+    .setTitle('Etiketlenme Cevabı')
     .setColor(0x5865f2)
-    .setDescription('Bot etiketlendiginde (@Bot) veya botun bir mesajina yanit verildiginde bu cevabi gonderir.')
+    .setDescription('Bot etiketlendiğinde (@Bot) veya botun bir mesajına yanıt verildiğinde bu cevabi gönderir.')
     .addFields(
-      { name: 'Durum', value: config.mentionEnabled ? '✅ Acik' : '❌ Kapali', inline: true },
+      { name: 'Durum', value: config.mentionEnabled ? 'Açık' : 'Kapalı', inline: true },
       { name: 'Cevap Metni', value: '```\n' + (config.mentionMessage || '-') + '\n```' },
     )
-    .setFooter({ text: 'Degiskenler: {user} {server} | Asagidaki menuden ayarla' });
+    .setFooter({ text: 'Degiskenler: {user} {server} | Aşağıdaki Menüyü Kullan' });
 }
 
 function buildSelectRow() {
@@ -18,8 +18,8 @@ function buildSelectRow() {
     .setCustomId('mention_menu')
     .setPlaceholder('Bir islem sec...')
     .addOptions(
-      { label: 'Cevap Metnini Degistir', value: 'set_message', emoji: '✏️' },
-      { label: 'Ac/Kapat', value: 'toggle', emoji: '🔁' },
+      { label: 'Cevap Metnini Degistir', value: 'set_message', emoji: '<:984149edit:1557005371066024076>' },
+      { label: 'Ac/Kapat', value: 'toggle', emoji: '<:750227restore:1556735107589742662>' },
     );
 
   return new ActionRowBuilder().addComponents(menu);
@@ -28,7 +28,7 @@ function buildSelectRow() {
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('mention')
-    .setDescription('Bot etiketlendiginde veya yanitlandiginda verecegi cevabi yonetir')
+    .setDescription('Bot etiketlendiğinde veya mesajına yanıt verildiğinde gönderilecek cevabı ayarlar.')
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
 
   async execute(interaction) {

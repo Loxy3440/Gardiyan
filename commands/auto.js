@@ -11,7 +11,7 @@ function shorten(text, max) {
 
 function buildStatusEmbed(config) {
   const total = config.autoResponses.length;
-  let list = 'Tanimli otomatik mesaj yok.';
+  let list = 'Tanımlı otomatik mesaj yok.';
 
   if (total) {
     const lines = [];
@@ -28,21 +28,22 @@ function buildStatusEmbed(config) {
   }
 
   return new EmbedBuilder()
-    .setTitle('Otomatik Mesajlar (Automessage)')
+    .setTitle('Otomatik Mesajlar')
     .setColor(0x5865f2)
-    .setDescription('Biri asagidaki tetikleyicilerden birini tam olarak yazarsa bot otomatik cevap verir.')
-    .addFields({ name: `Tanimli Mesajlar (${total})`, value: list })
-    .setFooter({ text: 'Asagidaki menuden ekle / sil / hepsini temizle' });
+    .setDescription('Otomatik mesajlar, sunucuda belirli kelimeler veya ifadeler algilendiginde otomatik olarak cevap vermek icin kullanilir.')
+    .addFields({ name: `Tanımlı Mesajlar (${total})`, value: list })
+    .setFooter({ text: 'Ekle / Güncelle, Sil, Tümünü Temizle' });
 }
+
 
 function buildSelectRow() {
   const menu = new StringSelectMenuBuilder()
     .setCustomId('auto_menu')
-    .setPlaceholder('Bir islem sec...')
+    .setPlaceholder('Yönet')
     .addOptions(
-      { label: 'Otomatik Mesaj Ekle/Guncelle', value: 'add_autoresponse', emoji: '💬' },
-      { label: 'Otomatik Mesaj Sil', value: 'remove_autoresponse', emoji: '🗑️' },
-      { label: 'Tum Otomatik Mesajlari Temizle', value: 'clear_autoresponses', emoji: '🧹' },
+      { label: 'Ekle / Güncelle', value: 'add_autoresponse', emoji: '<:517044plussign:1556735103097372834>' },
+      { label: 'Sil', value: 'remove_autoresponse', emoji: '<:delete:1556735111129731072>' },
+      { label: 'Tümünü Temizle', value: 'clear_autoresponses', emoji: '<:delete:1556735111129731072>' },
     );
 
   return new ActionRowBuilder().addComponents(menu);
@@ -51,7 +52,7 @@ function buildSelectRow() {
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('auto')
-    .setDescription('Otomatik mesajlari (automessage) yonetir')
+    .setDescription('Otomatik Mesajları Yönetir.')
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
 
   async execute(interaction) {

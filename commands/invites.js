@@ -5,8 +5,8 @@ const { buildOverview } = require('../utils/inviteUI');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('invites')
-    .setDescription('Bir uyenin davet istatistiklerini gosterir (toplam, ayrilan, yan hesap)')
-    .addUserOption(opt => opt.setName('uye').setDescription('Davetleri gosterilecek uye (bos = sen)').setRequired(false)),
+    .setDescription('Bir kullanıcının davetlerini gösterir.')
+    .addUserOption(opt => opt.setName('uye').setDescription('Davetleri gösterilecek kullanıcı').setRequired(false)),
 
   async execute(interaction) {
     const user = interaction.options.getUser('uye') || interaction.user;

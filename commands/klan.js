@@ -13,20 +13,20 @@ module.exports = {
     const config = await getConfig(interaction.guild.id);
 
     if (!config.clanRoleId) {
-      return interaction.reply({ embeds: [warningEmbed('Klan Rolu Yok', 'Once `/setklan` ile bir klan rolu sec.')], ephemeral: true });
+      return interaction.reply({ embeds: [warningEmbed('Klan Rolü Yok', 'Once `/setklan` ile bir klan rolü seç.')], ephemeral: true });
     }
 
     const role = interaction.guild.roles.cache.get(config.clanRoleId);
     if (!role) {
-      return interaction.reply({ embeds: [errorEmbed('Ayarlanan klan rolu silinmis. `/setklan` ile yeniden sec.')], ephemeral: true });
+      return interaction.reply({ embeds: [errorEmbed('Ayarlanan klan rolü silinmiş. `/setklan` ile yeniden seç.')], ephemeral: true });
     }
 
     const member = interaction.options.getMember('uye');
     if (!member) {
-      return interaction.reply({ embeds: [errorEmbed('Bu kullanici sunucuda degil.')], ephemeral: true });
+      return interaction.reply({ embeds: [errorEmbed('Bu kullanıcı sunucuda değil.')], ephemeral: true });
     }
     if (member.roles.cache.has(role.id)) {
-      return interaction.reply({ embeds: [warningEmbed('Zaten Var', `${member} kisisinde ${role} rolu zaten var.`)], ephemeral: true });
+      return interaction.reply({ embeds: [warningEmbed('Zaten Var', `${member} kisisinde ${role} rolü zaten var.`)], ephemeral: true });
     }
 
     const me = interaction.guild.members.me;
@@ -43,6 +43,6 @@ module.exports = {
       return interaction.reply({ embeds: [errorEmbed(`Rol verilemedi: ${err.message}`)], ephemeral: true });
     }
 
-    await interaction.reply({ embeds: [successEmbed('Klan Rolu Verildi', `${member} kisisine ${role} rolu verildi.`)] });
+    await interaction.reply({ embeds: [successEmbed('Klan Rolü Verildi', `${member} kisisine ${role} rolu verildi.`)] });
   },
 };

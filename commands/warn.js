@@ -21,7 +21,7 @@ module.exports = {
       warn = await addWarn(interaction.guild.id, user.id, interaction.user.id, reason);
     } catch (err) {
       console.error(err);
-      return interaction.editReply({ embeds: [errorEmbed('Veritabanina yazilirken bir hata olustu. MongoDB baglantisini kontrol et.')] });
+      return interaction.editReply({ embeds: [errorEmbed('Veritabanına yazılırken bir hata oluştu. MongoDB bağlantısini kontrol et.')] });
     }
 
     const allWarns = await getWarns(interaction.guild.id, user.id);
@@ -42,8 +42,8 @@ module.exports = {
       await user.send({
         embeds: [
           new EmbedBuilder()
-            .setTitle('Bir Uyari Aldin')
-            .setDescription(`**${interaction.guild.name}** sunucusunda uyarildin.`)
+            .setTitle('Bir uyarı aldınız')
+            .setDescription(`**${interaction.guild.name}** sunucusunda uyarıldınız.`)
             .addFields({ name: 'Sebep', value: reason })
             .setColor(0xe67e22)
             .setTimestamp(),

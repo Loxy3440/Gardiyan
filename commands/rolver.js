@@ -24,25 +24,25 @@ module.exports = {
     }
 
     if (role.managed || role.id === interaction.guild.id) {
-      return interaction.reply({ embeds: [warningEmbed('Gecersiz Rol', 'Bu rol verilemez.')], ephemeral: true });
+      return interaction.reply({ embeds: [warningEmbed('Geçersiz Rol', 'Bu rol verilemez.')], ephemeral: true });
     }
 
     if (role.position >= interaction.guild.members.me.roles.highest.position) {
-      return interaction.reply({ embeds: [errorEmbed('Bu rolu veremiyorum, botun rolu yeterince yuksek degil.')], ephemeral: true });
+      return interaction.reply({ embeds: [errorEmbed('Bu rolü veremiyorum', 'Bu üyenin rolü seninkine eşit veya daha yüksek')], ephemeral: true });
     }
 
     let durationMs = null;
     if (durationInput) {
       durationMs = parseDuration(durationInput);
       if (!durationMs) {
-        return interaction.reply({ embeds: [warningEmbed('Gecersiz Sure', 'Sureyi `10s`, `10m`, `2h`, `1d` seklinde yaz. (s/m/h/d)')], ephemeral: true });
+        return interaction.reply({ embeds: [warningEmbed('Geçersiz Süre', 'üreyi `10s`, `10m`, `2h`, `1d` seklinde yaz. (s/m/h/d)')], ephemeral: true });
       }
     }
 
     try {
       await member.roles.add(role, `Yetkili: ${interaction.user.tag}`);
     } catch {
-      return interaction.reply({ embeds: [errorEmbed('Rol verilirken bir hata olustu.')], ephemeral: true });
+      return interaction.reply({ embeds: [errorEmbed('Rol verilirken bir hata oluştu.')], ephemeral: true });
     }
 
     const expiresAt = durationMs ? Date.now() + durationMs : null;
@@ -51,7 +51,7 @@ module.exports = {
       await addTempRole(interaction.guild.id, member.id, role.id, new Date(expiresAt), interaction.channel.id);
     }
 
-    const embed = successEmbed('Rol Verildi', `**${member.user.tag}** kullanicisina **${role.name}** rolu verildi.`)
+    const embed = successEmbed('Rol Verildi', `**${member.user.tag}** Kullanıcısına **${role.name}** rolü verildi.`)
       .addFields({ name: 'Sure', value: durationMs ? formatRemaining(durationMs) + ' kaldi' : 'Suresiz', inline: true })
       .setFooter({ text: `Yetkili: ${interaction.user.tag}` })
       .setTimestamp();
@@ -74,15 +74,15 @@ module.exports = {
 
         const guildMember = await interaction.guild.members.fetch(member.id).catch(() => null);
         if (guildMember) {
-          await guildMember.roles.remove(role.id, 'Gecici rol suresi doldu').catch(() => {});
+          await guildMember.roles.remove(role.id, 'Geçici rol süresi doldu').catch(() => {});
         }
         await removeTempRole(interaction.guild.id, member.id, role.id).catch(() => {});
 
-        const expiredEmbed = infoEmbed('Sure Doldu - Rol Alindi', `**${member.user.tag}** kullanicisindan **${role.name}** rolu, suresi doldugu icin geri alindi.`)
+        const expiredEmbed = infoEmbed('Süresi Doldu', `**${member.user.tag}** kullanıcısından **${role.name}** rolü, süresi doldugu icin geri alındı.`)
           .setTimestamp();
 
         const disabledRow = new ActionRowBuilder().addComponents(
-          ButtonBuilder.from(row.components[0]).setDisabled(true).setLabel('Suresi Doldu'),
+          ButtonBuilder.from(row.components[0]).setDisabled(true).setLabel('Süresi Doldu'),
         );
 
         await message.edit({ embeds: [expiredEmbed], components: [disabledRow] }).catch(() => {});
