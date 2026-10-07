@@ -4,6 +4,9 @@ const { getActiveEvent, isWinningMessage, claimWinner, applyPlaceholders } = req
 // /trigger icin bellek-ici bekleme (cooldown) takibi. Bot yeniden baslatilinca sifirlanir, bu kasitli.
 const triggerCooldowns = new Map(); // key: `${guildId}:${watchId}` -> son gonderim zamani (ms)
 
+// /auto icin bellek-ici bekleme (cooldown) takibi - ayni kullanici ayni tetikleyiciyi spam yaparsa.
+const autoResponseCooldowns = new Map(); // key: `${guildId}:${userId}:${trigger}` -> son gonderim zamani (ms)
+
 module.exports = {
   name: 'messageCreate',
   once: false,
@@ -121,6 +124,21 @@ module.exports = {
 
       const match = config.autoResponses.find(r => r.trigger.trim().toLowerCase() === content);
       if (!match) return;
+
+      // ---------- SPAM ONLEME: ayni kullanici ayni tetikleyiciyi hemen tekrar yazarsa bekletiriz ----------
+      const cooldownSeconds = match.cooldownSeconds || 3;
+      const cooldownKey = `${message.guild.id}:${message.author.id}:${match.trigger.toLowerCase()}`;
+      const lastTriggered = autoResponseCooldowns.get(cooldownKey) || 0;
+      const now = Date.now();
+      const elapsedMs = now - lastTriggered;
+
+      if (elapsedMs < cooldownSeconds * 1000) {
+        const remainingSeconds = Math.ceil((cooldownSeconds * 1000 - elapsedMs) / 1000);
+        await message.reply({ content: `⏳ ${remainingSeconds} saniye sonra tekrar yazarsan cevap veririm.` }).catch(() => {});
+        return;
+      }
+
+      autoResponseCooldowns.set(cooldownKey, now);
 
       const parts = [];
       if (match.response) parts.push(match.response);

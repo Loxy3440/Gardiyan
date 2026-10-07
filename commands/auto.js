@@ -18,7 +18,7 @@ function buildStatusEmbed(config) {
     let used = 0;
     for (const r of config.autoResponses) {
       const trigger = shorten(r.trigger, 40).replace(/`/g, "'");
-      const line = `\`${trigger}\` -> ${r.response ? shorten(r.response, 80) : '*(sadece medya)*'}${r.mediaUrl ? ' 📎' : ''}`;
+      const line = `\`${trigger}\` -> ${r.response ? shorten(r.response, 80) : '*(sadece medya)*'}${r.mediaUrl ? ' 📎' : ''} *(${r.cooldownSeconds || 3}sn)*`;
       if (used + line.length + 1 > FIELD_LIMIT) break;
       lines.push(line);
       used += line.length + 1;

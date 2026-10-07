@@ -103,9 +103,18 @@ module.exports = {
           .setMaxLength(1000)
           .setPlaceholder('ornek: Hello');
 
+        const cooldownInput = new TextInputBuilder()
+          .setCustomId('cooldown_text')
+          .setLabel('Bekleme suresi - saniye (bos=3)')
+          .setStyle(TextInputStyle.Short)
+          .setRequired(false)
+          .setMaxLength(3)
+          .setPlaceholder('ornek: 3');
+
         modal.addComponents(
           new ActionRowBuilder().addComponents(triggerInput),
           new ActionRowBuilder().addComponents(responseInput),
+          new ActionRowBuilder().addComponents(cooldownInput),
         );
         return interaction.showModal(modal);
       }
@@ -157,6 +166,8 @@ module.exports = {
     if (interaction.isModalSubmit() && interaction.customId === 'auto_modal_addresponse') {
       const trigger = interaction.fields.getTextInputValue('trigger_text');
       const responseText = interaction.fields.getTextInputValue('response_text') || '';
+      const cooldownRaw = interaction.fields.getTextInputValue('cooldown_text');
+      const cooldownSeconds = Math.max(1, parseInt(cooldownRaw, 10) || 3);
 
       await interaction.reply({
         content: `Tetikleyici alindi: \`${trigger}\`.\nIstersen **60 saniye icinde bu kanala** bir gorsel veya video gonder, otomatik cevaba eklenecek. Eklemek istemiyorsan **"yok"** yaz.`,
@@ -179,10 +190,10 @@ module.exports = {
         return interaction.followUp({ embeds: [errorEmbed('Ne metin ne de gecerli bir gorsel/video aldigim icin otomatik cevap kaydedilmedi.')], ephemeral: true });
       }
 
-      await upsertAutoResponse(interaction.guild.id, trigger, responseText, mediaUrl);
+      await upsertAutoResponse(interaction.guild.id, trigger, responseText, mediaUrl, cooldownSeconds);
 
       await interaction.followUp({
-        embeds: [successEmbed('Otomatik Cevap Kaydedildi', `\`${trigger}\` tetikleyicisi kaydedildi.${mediaUrl ? ' (medya eklendi)' : ''}`)],
+        embeds: [successEmbed('Otomatik Cevap Kaydedildi', `\`${trigger}\` tetikleyicisi kaydedildi (bekleme: ${cooldownSeconds}sn).${mediaUrl ? ' (medya eklendi)' : ''}`)],
         ephemeral: true,
       });
 
@@ -898,8 +909,8 @@ module.exports = {
 
       clearActiveTimer(`mute_${interaction.guild.id}_${targetId}`);
 
-      const disabledRow = disableButtons(interaction, 'Unmuted');
-      const embed = successEmbed('Susturma Kaldırıldı', `**${member.user.tag}** artık tekrar konusabilir.`)
+      const disabledRow = disableButtons(interaction, 'unmuted');
+      const embed = successEmbed('Susturma Kaldırıldı', `**${member.user.tag}** artık tekrar konuşabilir.`)
         .setFooter({ text: `İşlemi yapan: ${interaction.user.tag}` })
         .setTimestamp();
 
@@ -929,7 +940,7 @@ module.exports = {
       }
 
       const disabledRow = disableButtons(interaction, 'Unlocked');
-      const embed = successEmbed('Kanal Kilidi Açıldı', `${channel} artık herkes tarafından kullanilabilir.`)
+      const embed = successEmbed('Kanal Kilidi Açıldı', `${channel} artık herkes tarafından kullanılabilir.`)
         .setFooter({ text: `İşlemi yapan: ${interaction.user.tag}` })
         .setTimestamp();
 

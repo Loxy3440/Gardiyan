@@ -33,11 +33,13 @@ async function setConfig(guildId, update) {
 }
 
 // Ayni tetikleyici (buyuk/kucuk harf onemsiz) varsa cevabini gunceller, yoksa yenisini ekler.
-async function upsertAutoResponse(guildId, trigger, response, mediaUrl = null) {
+// cooldownSeconds: ayni kullanici ayni tetikleyiciyi bu sure dolmadan tekrar yazarsa,
+// bot cevabi tekrar vermez, bunun yerine kac saniye kaldigini soyler (spam onleme).
+async function upsertAutoResponse(guildId, trigger, response, mediaUrl = null, cooldownSeconds = 3) {
   const config = await getConfig(guildId);
   const normalized = trigger.trim();
   const list = config.autoResponses.filter(r => r.trigger.toLowerCase() !== normalized.toLowerCase());
-  list.push({ trigger: normalized, response: response || '', mediaUrl: mediaUrl || null });
+  list.push({ trigger: normalized, response: response || '', mediaUrl: mediaUrl || null, cooldownSeconds: cooldownSeconds || 3 });
   await setConfig(guildId, { autoResponses: list });
   return list;
 }
