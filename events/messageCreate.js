@@ -133,8 +133,17 @@ module.exports = {
       const elapsedMs = now - lastTriggered;
 
       if (elapsedMs < cooldownSeconds * 1000) {
-        const remainingSeconds = Math.ceil((cooldownSeconds * 1000 - elapsedMs) / 1000);
-        await message.reply({ content: `⏳ ${remainingSeconds} saniye sonra tekrar yazarsan cevap veririm.` }).catch(() => {});
+        const remainingMs = cooldownSeconds * 1000 - elapsedMs;
+        const readyUnix = Math.floor((now + remainingMs) / 1000); // Discord'un time tag'i icin saniye cinsinden unix zaman damgasi
+
+        const warnMsg = await message
+          .reply({ content: `<:197546clock:1556994064400912435> Tekrar <t:${readyUnix}:R> yazarsan cevap veririm.` })
+          .catch(() => null);
+
+        // Bekleme suresi dolunca uyari mesajini sohbetten temizle.
+        if (warnMsg) {
+          setTimeout(() => warnMsg.delete().catch(() => {}), remainingMs);
+        }
         return;
       }
 
