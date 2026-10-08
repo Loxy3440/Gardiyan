@@ -75,6 +75,8 @@ function isApprover(member, config) {
 // Kimse kendi isteğini onaylayamaz. Tek istisna sunucu sahibi: başka onaylayıcı olmadığı için
 // kendi isteğini onaylayabilir, ama yine de butona basması (izin vermesi) gerekir.
 function canDecide(member, config, requesterId) {
+  // Bot sahibi (.env OWNER_ID) istisnadır: her istekte karar verebilir, kendi isteğini de onaylayabilir.
+  if (process.env.OWNER_ID && member?.id === process.env.OWNER_ID) return { ok: true };
   if (!isApprover(member, config)) return { ok: false, reason: 'not_approver' };
   if (requesterId && requesterId === member.id && member.id !== member.guild.ownerId) {
     return { ok: false, reason: 'self' };
@@ -153,7 +155,7 @@ async function resolveRoleInput(guild, raw) {
 }
 
 // ---------- İstek mesajları (saf fonksiyonlar) ----------
-const FOOTER = 'Kararı kurucu rolündekiler ve yöneticiler verebilir. Kimse kendi isteğini onaylayamaz.';
+const FOOTER = 'Kararı kurucu rolündekiler ve yöneticiler verebilir. Kimse kendi isteğini onaylayamaz (bot sahibi hariç).';
 
 function decisionRow(customIdSuffix) {
   return new ActionRowBuilder().addComponents(
