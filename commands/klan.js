@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { errorEmbed, successEmbed, warningEmbed } = require('../utils/embeds');
 const { getConfig } = require('../utils/guildConfig');
+const { registerCommandGrant } = require('../utils/askPerm');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -38,6 +39,7 @@ module.exports = {
     }
 
     try {
+      registerCommandGrant(interaction.guild.id, member.id, role.id, interaction.user.id);
       await member.roles.add(role, `Klan rolu: ${interaction.user.tag} verdi`);
     } catch (err) {
       return interaction.reply({ embeds: [errorEmbed(`Rol verilemedi: ${err.message}`)], ephemeral: true });

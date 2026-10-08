@@ -4,6 +4,7 @@ const { parseDuration } = require('../utils/parseDuration');
 const { formatRemaining, pickTickInterval } = require('../utils/formatDuration');
 const { addTempRole, removeTempRole } = require('../utils/tempRoles');
 const { setActiveTimer, clearActiveTimer } = require('../utils/activeTimers');
+const { registerCommandGrant } = require('../utils/askPerm');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -40,6 +41,7 @@ module.exports = {
     }
 
     try {
+      registerCommandGrant(interaction.guild.id, member.id, role.id, interaction.user.id);
       await member.roles.add(role, `Yetkili: ${interaction.user.tag}`);
     } catch {
       return interaction.reply({ embeds: [errorEmbed('Rol verilirken bir hata oluştu.')], ephemeral: true });

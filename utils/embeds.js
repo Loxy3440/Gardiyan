@@ -7,7 +7,7 @@ function permissionDeniedEmbed() {
     .setColor(0xed4245);
 }
 
-function errorEmbed(description = 'Bir seyler ters gitti.') {
+function errorEmbed(description = 'Bir şeyler ters gitti.') {
   return new EmbedBuilder()
     .setTitle('Hata')
     .setDescription(description)

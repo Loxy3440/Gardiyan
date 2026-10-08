@@ -1,4 +1,5 @@
 const { getConfig } = require('../utils/guildConfig');
+const { handleBotJoin, registerCommandGrant } = require('../utils/askPerm');
 const { recordJoin } = require('../utils/inviteTracker');
 
 module.exports = {
@@ -15,10 +16,17 @@ module.exports = {
     try {
       const config = await getConfig(member.guild.id);
 
+      // Bot eklendiyse kurucu rolünden izin iste (normal üyeler için izin istenmez).
+      if (member.user.bot) {
+        handleBotJoin(member).catch(err => console.error('[ASKPERM]', err));
+      }
+
       if (config.autoRoleEnabled) {
         const roleId = member.user.bot ? config.autoRoleBotId : config.autoRoleId;
         const role = roleId ? member.guild.roles.cache.get(roleId) : null;
         if (role) {
+          // Otorol bir sistem işlemi: izin istenmesin.
+          registerCommandGrant(member.guild.id, member.id, role.id, member.client.user.id);
           await member.roles.add(role, 'Otomatik rol (otorol)').catch(err => console.error('[AUTOROLE]', err.message));
         }
       }

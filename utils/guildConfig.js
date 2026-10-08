@@ -19,6 +19,10 @@ const DEFAULT_CONFIG = {
   vcChannelId: null, // /vcc ile ayarlanan, bot acilista otomatik girecegi ses kanali
   activityTriggers: [], // [{ watchId, watchType: 'category'|'channel', notifyChannelId, message, newChannelMessage, cooldownSeconds }, ...]
   channelBips: [], // [{ channelId, message }, ...] - yeni uye katilinca bu kanallara mesaj atilir
+  askPermChannelId: null, // /askperm: izin isteklerinin gönderileceği kanal
+  askPermRoleId: null, // /askperm: kararı verebilecek kurucu rolü
+  askPermBotEnabled: true, // bot eklenince izin iste
+  askPermRoleEnabled: true, // rol verilince izin iste
 };
 
 async function getConfig(guildId) {

@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { errorEmbed, successEmbed, warningEmbed } = require('../utils/embeds');
+const { registerCommandGrant } = require('../utils/askPerm');
 
 // Uyeyi, atanabilir roller listesinde (pozisyona gore siralanmis) bir sonraki
 // role yukseltir. Onceki en yuksek rolu kaldirir, yeni rolu ekler.
@@ -45,6 +46,7 @@ module.exports = {
     }
 
     try {
+      registerCommandGrant(interaction.guild.id, member.id, nextRole.id, interaction.user.id);
       await member.roles.add(nextRole, `Promote - Yetkili: ${interaction.user.tag}`);
       if (currentTop) {
         await member.roles.remove(currentTop, `Promote - Yetkili: ${interaction.user.tag}`);

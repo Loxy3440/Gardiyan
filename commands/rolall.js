@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { successEmbed, errorEmbed } = require('../utils/embeds');
+const { registerCommandGrant } = require('../utils/askPerm');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -44,6 +45,8 @@ module.exports = {
 
     for (const member of targets.values()) {
       try {
+        // Toplu rol dağıtımı: yüzlerce izin isteği oluşmasın diye sistem işlemi sayılır.
+        registerCommandGrant(interaction.guild.id, member.id, role.id, interaction.client.user.id);
         await member.roles.add(role, `/rolall - ${interaction.user.tag}`);
         success++;
       } catch {

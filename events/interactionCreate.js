@@ -32,6 +32,7 @@ const { clearActiveTimer } = require('../utils/activeTimers');
 const { handleEventInteraction } = require('../utils/eventListUI');
 const { handleInviteInteraction } = require('../utils/inviteUI');
 const { handleYtSendInteraction } = require('../utils/ytSendUI');
+const { handleAskPermInteraction } = require('../utils/askPerm');
 
 module.exports = {
   name: 'interactionCreate',
@@ -64,6 +65,9 @@ module.exports = {
 
     // ---------- /ytsend (kanal sec, onayla, gonder) ----------
     if (await handleYtSendInteraction(interaction)) return;
+
+    // ---------- /askperm (bot ekleme / rol verme izni) ----------
+    if (await handleAskPermInteraction(interaction)) return;
 
     // ---------- HELP DROPDOWN MENUSU ----------
     if (interaction.isStringSelectMenu() && interaction.customId === 'help_category') {
@@ -909,8 +913,8 @@ module.exports = {
 
       clearActiveTimer(`mute_${interaction.guild.id}_${targetId}`);
 
-      const disabledRow = disableButtons(interaction, 'unmuted');
-      const embed = successEmbed('Susturma Kaldırıldı', `**${member.user.tag}** artık tekrar konuşabilir.`)
+      const disabledRow = disableButtons(interaction, 'Unmuted');
+      const embed = successEmbed('Susturma Kaldırıldı', `**${member.user.tag}** artık tekrar konusabilir.`)
         .setFooter({ text: `İşlemi yapan: ${interaction.user.tag}` })
         .setTimestamp();
 
@@ -940,7 +944,7 @@ module.exports = {
       }
 
       const disabledRow = disableButtons(interaction, 'Unlocked');
-      const embed = successEmbed('Kanal Kilidi Açıldı', `${channel} artık herkes tarafından kullanılabilir.`)
+      const embed = successEmbed('Kanal Kilidi Açıldı', `${channel} artık herkes tarafından kullanilabilir.`)
         .setFooter({ text: `İşlemi yapan: ${interaction.user.tag}` })
         .setTimestamp();
 
