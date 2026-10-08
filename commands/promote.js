@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { errorEmbed, successEmbed, warningEmbed } = require('../utils/embeds');
-const { registerCommandGrant } = require('../utils/askPerm');
+const { registerCommandGrant, needsApproval } = require('../utils/askPerm');
 
 // Uyeyi, atanabilir roller listesinde (pozisyona gore siralanmis) bir sonraki
 // role yukseltir. Onceki en yuksek rolu kaldirir, yeni rolu ekler.
@@ -45,14 +45,29 @@ module.exports = {
       return interaction.reply({ embeds: [errorEmbed('Bu rolu veremiyorum, botun rolu yeterince yuksek degil.')], ephemeral: true });
     }
 
+    const pending = await needsApproval(interaction.guild); // onay gerekecek mi?
+
     try {
-      registerCommandGrant(interaction.guild.id, member.id, nextRole.id, interaction.user.id);
+      // Onay gerekiyorsa eski rol şimdi alınmaz, yeni rol onaylanınca eski rol otomatik alınır.
+      registerCommandGrant(interaction.guild.id, member.id, nextRole.id, interaction.user.id, { replaceRoleId: currentTop?.id });
       await member.roles.add(nextRole, `Promote - Yetkili: ${interaction.user.tag}`);
-      if (currentTop) {
+      if (currentTop && !pending) {
         await member.roles.remove(currentTop, `Promote - Yetkili: ${interaction.user.tag}`);
       }
     } catch {
       return interaction.reply({ embeds: [errorEmbed('Rol Değiştirilirken bir Hata Oluştu.')], ephemeral: true });
+    }
+
+    if (pending) {
+      return interaction.reply({
+        embeds: [
+          warningEmbed(
+            'Onay Bekleniyor',
+            `**${member.user.tag}** için **${nextRole.name}** terfi isteği izin kanalına gönderildi. ` +
+              `Kurucu veya bir yönetici onaylarsa **${nextRole.name}** verilecek${currentTop ? ` ve **${currentTop.name}** alınacak` : ''}.`,
+          ),
+        ],
+      });
     }
 
     const embed = successEmbed('Uye Yukseltildi', `**${member.user.tag}** artık **${nextRole.name}** rolune sahip.`)

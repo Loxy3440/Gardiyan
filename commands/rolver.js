@@ -4,7 +4,7 @@ const { parseDuration } = require('../utils/parseDuration');
 const { formatRemaining, pickTickInterval } = require('../utils/formatDuration');
 const { addTempRole, removeTempRole } = require('../utils/tempRoles');
 const { setActiveTimer, clearActiveTimer } = require('../utils/activeTimers');
-const { registerCommandGrant } = require('../utils/askPerm');
+const { registerCommandGrant, needsApproval } = require('../utils/askPerm');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -40,17 +40,33 @@ module.exports = {
       }
     }
 
+    const expiresAt = durationMs ? Date.now() + durationMs : null;
+    const pending = await needsApproval(interaction.guild); // onay gerekecek mi?
+
     try {
-      registerCommandGrant(interaction.guild.id, member.id, role.id, interaction.user.id);
+      // Süre bilgisi de bırakılır: onay süreden sonra gelirse rol verilmez.
+      registerCommandGrant(interaction.guild.id, member.id, role.id, interaction.user.id, { expiresAt });
       await member.roles.add(role, `Yetkili: ${interaction.user.tag}`);
     } catch {
       return interaction.reply({ embeds: [errorEmbed('Rol verilirken bir hata oluştu.')], ephemeral: true });
     }
 
-    const expiresAt = durationMs ? Date.now() + durationMs : null;
-
     if (durationMs) {
       await addTempRole(interaction.guild.id, member.id, role.id, new Date(expiresAt), interaction.channel.id);
+    }
+
+    // İzin sistemi açıksa rol, onay gelene kadar üyeden geri alınır: "verildi" demeyelim.
+    if (pending) {
+      return interaction.reply({
+        embeds: [
+          warningEmbed(
+            'Onay Bekleniyor',
+            `**${member.user.tag}** kullanıcısına **${role.name}** rolü verme isteği izin kanalına gönderildi. ` +
+              'Kurucu veya bir yönetici onaylayana kadar rol **verilmeyecek**.' +
+              (durationMs ? ` Süre (${formatRemaining(durationMs)}) şimdiden işliyor, onay süreden sonra gelirse rol verilmez.` : ''),
+          ),
+        ],
+      });
     }
 
     const embed = successEmbed('Rol Verildi', `**${member.user.tag}** Kullanıcısına **${role.name}** rolü verildi.`)

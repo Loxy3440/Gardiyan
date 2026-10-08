@@ -1,7 +1,7 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { errorEmbed, successEmbed, warningEmbed } = require('../utils/embeds');
 const { getConfig } = require('../utils/guildConfig');
-const { registerCommandGrant } = require('../utils/askPerm');
+const { registerCommandGrant, needsApproval } = require('../utils/askPerm');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -38,11 +38,19 @@ module.exports = {
       });
     }
 
+    const pending = await needsApproval(interaction.guild); // onay gerekecek mi?
+
     try {
       registerCommandGrant(interaction.guild.id, member.id, role.id, interaction.user.id);
       await member.roles.add(role, `Klan rolu: ${interaction.user.tag} verdi`);
     } catch (err) {
       return interaction.reply({ embeds: [errorEmbed(`Rol verilemedi: ${err.message}`)], ephemeral: true });
+    }
+
+    if (pending) {
+      return interaction.reply({
+        embeds: [warningEmbed('Onay Bekleniyor', `${member} kişisine ${role} rolü verme isteği izin kanalına gönderildi. Kurucu veya bir yönetici onaylayana kadar rol **verilmeyecek**.`)],
+      });
     }
 
     await interaction.reply({ embeds: [successEmbed('Klan Rolü Verildi', `${member} kisisine ${role} rolu verildi.`)] });
