@@ -23,6 +23,8 @@ const DEFAULT_CONFIG = {
   askPermRoleId: null, // /askperm: kararı verebilecek kurucu rolü
   askPermBotEnabled: true, // bot eklenince izin iste
   askPermRoleEnabled: true, // rol verilince izin iste
+  tagRoleId: null, // /settag: sunucu etiketini takana verilecek rol
+  tagChannelId: null, // /settag: rol verilince üyenin etiketlenip mesajın silineceği kanal
 };
 
 async function getConfig(guildId) {
