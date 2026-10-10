@@ -55,15 +55,8 @@ for (const file of eventFiles) {
   console.log(`[EVENT YUKLENDI] ${event.name}`);
 }
 
-// ---------- Render icin kucuk web sunucusu (UptimeRobot buraya ping atar) ----------
-const http = require('http');
-const PORT = process.env.PORT || 3000;
-http
-  .createServer((req, res) => {
-    res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
-    res.end('Bot calisiyor');
-  })
-  .listen(PORT, () => console.log(`[WEB] Port ${PORT} dinleniyor.`));
+// ---------- Web sunucusu: dashboard + /api/stats (Render'in port beklentisini de karsilar) ----------
+require('./utils/webServer').startWebServer(client);
 
 (async () => {
   try {
