@@ -1,0 +1,40 @@
+a{color:var(--brass)}
+.who{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--mute)}
+.who img{width:28px;height:28px;border-radius:50%}
+.out{margin-left:6px;font-size:13px}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:14px}
+.box h2{font:700 20px/1.2 "Bricolage Grotesque",sans-serif;margin:0 0 6px}
+.center{text-align:center;padding:36px 20px}
+.hint{color:var(--mute);font-size:14px;margin:0 0 16px}
+code{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:13px;color:var(--brass)}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;margin-bottom:4px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:none;background:var(--panel);color:var(--mute);border:1px solid var(--line);border-radius:999px;padding:9px 16px;font:500 15px "IBM Plex Sans",sans-serif;cursor:pointer}
+.tabs button.on{background:var(--brass);color:#17130a;border-color:var(--brass)}
+.list{list-style:none;margin:0 0 16px;padding:0;display:grid;gap:8px}
+.list:empty::after{content:"Henüz bir şey yok.";color:var(--mute);font-size:14px}
+.item{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.item .txt{min-width:0}
+.item .t{font-weight:500;overflow-wrap:anywhere}
+.item .s{color:var(--mute);font-size:13px;overflow-wrap:anywhere}
+.item .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.item img{width:36px;height:36px;border-radius:50%;flex:none}
+.item .who2{display:flex;align-items:center;gap:10px;min-width:0}
+input,select,textarea{width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:11px 12px;font:16px "IBM Plex Sans",sans-serif}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--brass);outline-offset:1px}
+textarea{resize:vertical}
+.row{display:flex;gap:8px;align-items:center;margin-top:10px}
+.row select{width:auto;flex:none}
+.row label{color:var(--mute);font-size:14px;white-space:nowrap}
+.row input[type=number]{max-width:120px}
+.stack{display:grid;gap:10px}
+.btn{display:inline-block;background:var(--brass);color:#17130a;border:0;border-radius:10px;padding:11px 18px;font:500 15px "IBM Plex Sans",sans-serif;cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn.alt{background:var(--panel-2);color:var(--ink);border:1px solid var(--line)}
+.btn.sm{padding:7px 12px;font-size:14px}
+.btn.danger{background:#3a1a1d;color:#ff9b9b;border:1px solid #5a2a2e}
+.btn:disabled{opacity:.5;cursor:wait}
+#toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);background:var(--panel-2);border:1px solid var(--line);color:var(--ink);padding:11px 18px;border-radius:12px;opacity:0;pointer-events:none;transition:.25s;max-width:calc(100vw - 32px);z-index:9}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#toast.err{border-color:#7a2e33;color:#ff9b9b}
+@media (max-width:560px){.item{flex-direction:column;align-items:stretch}.item .acts{justify-content:flex-start}}
+.row + .list{margin-top:14px}

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b0e13">
+<title>Gardiyan Yönetim</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="panel.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><div><h1>Yönetim</h1><p><a href="/">← Panele dön</a></p></div></div>
+    <div id="who" class="who" hidden><img id="whoImg" alt=""><span id="whoName"></span><a href="/auth/logout" class="out">Çıkış</a></div>
+  </header>
+
+  <!-- Giriş ekranı -->
+  <section id="login" class="box center" hidden>
+    <h2>Giriş gerekli</h2>
+    <p id="loginMsg">Bu bölümü sadece bot sahibi kullanabilir.</p>
+    <a class="btn" href="/auth/login">Discord ile giriş yap</a>
+  </section>
+
+  <!-- Yönetim -->
+  <main id="app" hidden>
+    <nav class="tabs" id="tabs" role="tablist">
+      <button data-tab="activity" class="on">Aktivite</button>
+      <button data-tab="mention">Etiket cevapları</button>
+      <button data-tab="auto">Otomatik mesaj</button>
+      <button data-tab="members">Üyeler</button>
+    </nav>
+
+    <section class="pane" id="pane-activity">
+      <div class="box">
+        <h2>Durum yazıları</h2>
+        <p class="hint">Bot listedeki yazıları sırayla gösterir. <code>{uye}</code> yazarsan anlık üye sayısı, <code>{sunucu}</code> yazarsan sunucu sayısı gelir. Bu ayar tüm sunucular için geçerlidir.</p>
+        <ul class="list" id="actList"></ul>
+        <form id="actForm" class="row">
+          <select name="type" aria-label="Tür">
+            <option value="WATCHING">İzliyor</option>
+            <option value="PLAYING">Oynuyor</option>
+            <option value="LISTENING">Dinliyor</option>
+            <option value="COMPETING">Yarışıyor</option>
+          </select>
+          <input name="text" maxlength="100" placeholder="{uye} üye" required>
+          <button class="btn">Ekle</button>
+        </form>
+        <form id="intForm" class="row">
+          <label>Geçiş süresi (sn)</label>
+          <input name="seconds" type="number" min="5" max="3600" id="intVal" required>
+          <button class="btn alt">Kaydet</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="pane" id="pane-mention" hidden>
+      <div class="box">
+        <h2>Etiket cevapları</h2>
+        <p class="hint">Bot etiketlenip tetikleyici yazılınca bu cevabı verir (<code>/setmention</code>).</p>
+        <ul class="list" id="menList"></ul>
+        <form id="menForm" class="stack">
+          <input name="trigger" maxlength="100" placeholder="Tetikleyici (ör. naber)" required>
+          <textarea name="response" maxlength="1800" rows="3" placeholder="Cevap"></textarea>
+          <input name="mediaUrl" maxlength="500" placeholder="Medya adresi (isteğe bağlı)">
+          <button class="btn">Ekle / güncelle</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="pane" id="pane-auto" hidden>
+      <div class="box">
+        <h2>Otomatik mesajlar</h2>
+        <p class="hint">Sunucuda tetikleyici yazılınca bot otomatik cevap verir (<code>/auto</code>).</p>
+        <ul class="list" id="autoList"></ul>
+        <form id="autoForm" class="stack">
+          <input name="trigger" maxlength="100" placeholder="Tetikleyici (ör. sa)" required>
+          <textarea name="response" maxlength="1800" rows="3" placeholder="Cevap"></textarea>
+          <input name="mediaUrl" maxlength="500" placeholder="Medya adresi (isteğe bağlı)">
+          <div class="row"><label>Bekleme (sn)</label><input name="cooldownSeconds" type="number" min="1" max="3600" value="3"></div>
+          <button class="btn">Ekle / güncelle</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="pane" id="pane-members" hidden>
+      <div class="box">
+        <h2>Üye işlemleri</h2>
+        <p class="hint">Üyeyi ara, sonra sustur, susturmayı kaldır ya da at. İşlemler denetim kaydına "Panel" olarak yazılır.</p>
+        <form id="searchForm" class="row"><input id="q" minlength="2" placeholder="Üye adı (en az 2 harf)" required><button class="btn">Ara</button></form>
+        <ul class="list" id="memList"></ul>
+      </div>
+    </section>
+  </main>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="panel.js"></script>
+</body>
+</html>

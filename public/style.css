@@ -38,3 +38,6 @@ footer{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;color:v
 
 @media (max-width:560px){.grid{grid-template-columns:repeat(2,1fr)}.hero{padding:22px 18px 14px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+
+.hdr-right{display:flex;align-items:center;gap:10px}
+.adm{color:var(--ink);text-decoration:none;font-size:14px;border:1px solid var(--line);background:var(--panel);padding:7px 12px;border-radius:999px}
