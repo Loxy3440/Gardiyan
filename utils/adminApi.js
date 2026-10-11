@@ -5,6 +5,7 @@ const { getConfig, upsertMentionTrigger, removeMentionTrigger, upsertAutoRespons
 const { parseDuration } = require('./parseDuration');
 const { clearActiveTimer } = require('./activeTimers');
 const { STATS_GUILD_ID } = require('./activityRotator');
+const runner = require('./commandRunner');
 
 const TYPES = ['PLAYING', 'WATCHING', 'LISTENING', 'COMPETING'];
 const MAX_TIMEOUT_MS = 28 * 24 * 60 * 60 * 1000;
@@ -115,6 +116,12 @@ const handlers = {
     return { ok: true };
   },
 
+  // ---- tüm komutlar ----
+  'GET commands': async client => ({ commands: runner.describe(client) }),
+  'GET meta': async client => runner.meta(getGuild(client)),
+  'POST commands/run': async (client, b, actor) => runner.startRun(client, actor, b),
+  'GET commands/job': async (_c, _b, actor, query) => runner.getJob(query.get('id'), actor.id),
+
   // ---- moderasyon ----
   'POST mute': async (client, b, actor) => {
     const member = await getTarget(client, b.userId, actor);
@@ -151,6 +158,7 @@ async function handleAdmin(client, method, route, body, actor, query) {
     return result;
   } catch (err) {
     if (err instanceof ApiError) throw err;
+    if (err instanceof runner.PanelError) throw new ApiError(400, err.message);
     console.error('[PANEL]', route, err);
     throw new ApiError(500, 'İşlem başarısız: ' + (err.message || 'bilinmeyen hata'));
   }
