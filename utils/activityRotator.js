@@ -9,11 +9,36 @@ const TYPE_MAP = {
 };
 
 let rotateTimer = null;
+let refreshTimer = null;
 let rotateIndex = 0;
+let currentEntry = null;
+
+// Üye sayısı hangi sunucudan okunacak (.env STATS_GUILD_ID ile değiştirilebilir).
+const STATS_GUILD_ID = process.env.STATS_GUILD_ID || '1554352519084253265';
+
+function getMemberCount(client) {
+  const guild = client.guilds.cache.get(STATS_GUILD_ID);
+  if (guild) return guild.memberCount;
+  // Bot o sunucuda değilse tüm sunucuların toplamını göster.
+  return client.guilds.cache.reduce((sum, g) => sum + g.memberCount, 0);
+}
+
+// Aktivite metnindeki {uye} / {members} / {sunucu} yer tutucularını anlık değerle değiştirir.
+function renderText(client, text) {
+  return String(text)
+    .replace(/\{(uye|members)\}/gi, getMemberCount(client).toLocaleString('tr-TR'))
+    .replace(/\{(sunucu|guilds)\}/gi, String(client.guilds.cache.size));
+}
 
 function applyOne(client, entry) {
   if (!client.user) return;
-  client.user.setActivity(entry.text, { type: TYPE_MAP[entry.type] ?? 3 });
+  currentEntry = entry;
+  client.user.setActivity(renderText(client, entry.text), { type: TYPE_MAP[entry.type] ?? 3 });
+}
+
+// Üye katılıp/ayrılınca ve düzenli aralıkla çağrılır: şu an gösterilen aktiviteyi güncel sayıyla yeniler.
+function refreshActivity(client) {
+  if (currentEntry && /\{(uye|members|sunucu|guilds)\}/i.test(currentEntry.text)) applyOne(client, currentEntry);
 }
 
 // Kaydedilen aktivite listesini/suresini okuyup uygular ve gerekirse donguyu (rotation) yeniden baslatir.
@@ -24,6 +49,12 @@ async function startActivityRotation(client) {
     rotateTimer = null;
   }
   rotateIndex = 0;
+  currentEntry = null;
+
+  if (!refreshTimer) {
+    refreshTimer = setInterval(() => refreshActivity(client), 60_000);
+    refreshTimer.unref?.();
+  }
 
   let config;
   try {
@@ -56,4 +87,4 @@ async function startActivityRotation(client) {
   }
 }
 
-module.exports = { startActivityRotation, TYPE_MAP };
+module.exports = { startActivityRotation, refreshActivity, getMemberCount, STATS_GUILD_ID, TYPE_MAP };

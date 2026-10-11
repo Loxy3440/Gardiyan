@@ -505,7 +505,7 @@ module.exports = {
         .setStyle(TextInputStyle.Short)
         .setRequired(true)
         .setMaxLength(100)
-        .setPlaceholder('ornek: /help');
+        .setPlaceholder('ornek: /help   veya   {uye} uye (anlik uye sayisi)');
 
       modal.addComponents(new ActionRowBuilder().addComponents(textInput));
       return interaction.showModal(modal);

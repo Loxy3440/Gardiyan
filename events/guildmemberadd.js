@@ -1,3 +1,4 @@
+const { refreshActivity } = require('../utils/activityRotator');
 const { getConfig } = require('../utils/guildConfig');
 const { handleBotJoin, registerCommandGrant } = require('../utils/askPerm');
 const { recordJoin } = require('../utils/inviteTracker');
@@ -7,6 +8,7 @@ module.exports = {
   name: 'guildMemberAdd',
   once: false,
   async execute(member) {
+    refreshActivity(member.client);
     syncMember(member).catch(err => console.error('[TAG]', err));
     // Hangi davetle geldigini kaydet (hata verse bile diger islemler devam etsin).
     try {

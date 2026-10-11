@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b0e13">
+<title>Gardiyan Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <img id="guildIcon" alt="" hidden>
+      <div>
+        <h1 id="guildName">Gardiyan</h1>
+        <p>Sunucu paneli</p>
+      </div>
+    </div>
+    <div class="live" id="live" role="status"><span class="dot"></span><span id="liveText">Bağlanıyor</span></div>
+  </header>
+
+  <section class="hero" aria-label="Üye sayısı">
+    <div class="label">Toplam üye</div>
+    <div class="count" id="members" aria-live="polite">–</div>
+    <svg id="spark" viewBox="0 0 300 60" preserveAspectRatio="none" aria-hidden="true"><path id="sparkLine" d=""/></svg>
+    <div class="note" id="sparkNote">Bu oturumdaki değişim burada çizilir.</div>
+  </section>
+
+  <section class="grid">
+    <div class="card"><span>Kanal</span><b id="channels">–</b></div>
+    <div class="card"><span>Rol</span><b id="roles">–</b></div>
+    <div class="card"><span>Boost</span><b id="boosts">–</b><small id="tier"></small></div>
+    <div class="card"><span>Komut</span><b id="commands">–</b></div>
+    <div class="card"><span>Gecikme</span><b id="ping">–</b></div>
+    <div class="card"><span>Çalışma süresi</span><b id="uptime">–</b></div>
+  </section>
+
+  <footer>
+    <span id="botTag">Gardiyan</span>
+    <span id="updated">Henüz güncellenmedi</span>
+  </footer>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
