@@ -1,5 +1,5 @@
 const { PermissionFlagsBits } = require('discord.js');
-const { getActivityConfig, setActivityConfig, addActivity, removeActivity } = require('./activityConfig');
+const { getActivityConfig, setActivityConfig, addActivity, removeActivity, isStreamUrl } = require('./activityConfig');
 const { startActivityRotation } = require('./activityRotator');
 const { getConfig, setConfig, upsertMentionTrigger, removeMentionTrigger, upsertAutoResponse, removeAutoResponse } = require('./guildConfig');
 const { parseDuration } = require('./parseDuration');
@@ -7,7 +7,7 @@ const { clearActiveTimer } = require('./activeTimers');
 const { STATS_GUILD_ID } = require('./activityRotator');
 const runner = require('./commandRunner');
 
-const TYPES = ['PLAYING', 'WATCHING', 'LISTENING', 'COMPETING'];
+const TYPES = ['PLAYING', 'STREAMING', 'WATCHING', 'LISTENING', 'COMPETING'];
 const MAX_TIMEOUT_MS = 28 * 24 * 60 * 60 * 1000;
 
 class ApiError extends Error {
@@ -82,7 +82,13 @@ const handlers = {
   // ---- aktivite ----
   'POST activity/add': async (client, b) => {
     if (!TYPES.includes(b.type)) throw new ApiError(400, 'Geçersiz aktivite türü.');
-    await addActivity(b.type, str(b.text, 100, 'Metin'));
+    const text = str(b.text, 100, 'Metin');
+    let url = null;
+    if (b.type === 'STREAMING') {
+      url = str(b.url, 200, 'Yayın adresi');
+      if (!isStreamUrl(url)) throw new ApiError(400, 'Yayın adresi Twitch veya YouTube olmalı (https://twitch.tv/...).');
+    }
+    await addActivity(b.type, text, url);
     await startActivityRotation(client);
     return { ok: true };
   },

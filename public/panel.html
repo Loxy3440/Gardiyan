@@ -45,10 +45,12 @@
           <select name="type" aria-label="Tür">
             <option value="WATCHING">İzliyor</option>
             <option value="PLAYING">Oynuyor</option>
+            <option value="STREAMING">Yayında</option>
             <option value="LISTENING">Dinliyor</option>
             <option value="COMPETING">Yarışıyor</option>
           </select>
           <input name="text" maxlength="100" placeholder="{uye} üye" required>
+          <input name="url" id="actUrl" maxlength="200" type="url" placeholder="https://twitch.tv/kullanici" hidden>
           <button class="btn">Ekle</button>
         </form>
         <form id="intForm" class="row">

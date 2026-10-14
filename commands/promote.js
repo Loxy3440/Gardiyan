@@ -4,12 +4,12 @@ const { registerCommandGrant, needsApproval } = require('../utils/askPerm');
 const { getConfig } = require('../utils/guildConfig');
 const { getLadder, currentRank, blockedReason } = require('../utils/rankLadder');
 
-// Üyeyi "üye rolleri" basamaklarında bir üst role çıkarır (/setroles ile ayarlanır).
-// Yetkili rollerine terfi vermez; yetkili olan üyelere uygulanmaz.
+// Üyeyi üye + yetkili rolleri basamaklarında bir üst role çıkarır (/setroles ile ayarlanır).
+// Basamakta olmayan roller (ör. sadece görünüm için "Yetkili" rolü) atlanır.
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('promote')
-    .setDescription('Üyeyi üye rolleri arasında bir üst role yükseltir (yetkili rollerine geçmez).')
+    .setDescription('Üyeyi üye ve yetkili rolleri arasında bir üst role yükseltir.')
     .addUserOption(opt => opt.setName('uye').setDescription('Yükseltilecek üye').setRequired(true))
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
 
@@ -22,19 +22,18 @@ module.exports = {
     const config = await getConfig(interaction.guild.id);
     const info = getLadder(interaction.guild, config);
 
-    const blocked = blockedReason(member, info);
+    const blocked = blockedReason(member);
     if (blocked) return interaction.reply({ embeds: [warningEmbed('İşlem Yapılamaz', blocked)], ephemeral: true });
 
     if (!info.ladder.length) {
-      return interaction.reply({ embeds: [warningEmbed('Rol Yok', 'Terfi için üye rolü bulunamadı. `/setroles` ile üye rollerini ayarla.')], ephemeral: true });
+      return interaction.reply({ embeds: [warningEmbed('Rol Yok', 'Terfi için rol bulunamadı. `/setroles` ile üye ve yetkili rollerini ayarla.')], ephemeral: true });
     }
 
     const { index, role: currentTop } = currentRank(member, info.ladder);
     const nextRole = info.ladder[index + 1];
 
     if (!nextRole) {
-      const extra = info.staff.size ? ' Bir üst basamak yetkili rolleri olduğu için terfi verilmez.' : '';
-      return interaction.reply({ embeds: [warningEmbed('Zaten En Üst Seviyede', `**${member.user.tag}** üye rollerinin en yükseğinde.${extra}`)], ephemeral: true });
+      return interaction.reply({ embeds: [warningEmbed('Zaten En Üst Seviyede', `**${member.user.tag}** basamakların en yükseğinde${currentTop ? ` (**${currentTop.name}**)` : ''}.`)], ephemeral: true });
     }
 
     if (nextRole.position >= interaction.guild.members.me.roles.highest.position) {

@@ -1,8 +1,9 @@
 const { getActivityConfig } = require('./activityConfig');
 
-// Discord.js ActivityType degerleri: Playing=0, Listening=2, Watching=3, Competing=5
+// Discord.js ActivityType degerleri: Playing=0, Streaming=1, Listening=2, Watching=3, Competing=5
 const TYPE_MAP = {
   PLAYING: 0,
+  STREAMING: 1,
   LISTENING: 2,
   WATCHING: 3,
   COMPETING: 5,
@@ -33,7 +34,11 @@ function renderText(client, text) {
 function applyOne(client, entry) {
   if (!client.user) return;
   currentEntry = entry;
-  client.user.setActivity(renderText(client, entry.text), { type: TYPE_MAP[entry.type] ?? 3 });
+  const options = { type: TYPE_MAP[entry.type] ?? 3 };
+  if (entry.type === 'STREAMING') {
+    if (entry.url) options.url = entry.url; // url yoksa Discord normal "Oynuyor" gibi gosterir
+  }
+  client.user.setActivity(renderText(client, entry.text), options);
 }
 
 // Üye katılıp/ayrılınca ve düzenli aralıkla çağrılır: şu an gösterilen aktiviteyi güncel sayıyla yeniler.

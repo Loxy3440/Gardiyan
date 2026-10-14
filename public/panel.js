@@ -21,7 +21,7 @@ function rolePicker(mount) {
 const pickers = {};
 const lockSub = r => (r.allowedRoleIds && r.allowedRoleIds.length ? " · 🔒 " + r.allowedRoleIds.map(roleName).join(", ") : "");
 
-const TYPE = { WATCHING: "İzliyor", PLAYING: "Oynuyor", LISTENING: "Dinliyor", COMPETING: "Yarışıyor" };
+const TYPE = { WATCHING: "İzliyor", PLAYING: "Oynuyor", STREAMING: "Yayında", LISTENING: "Dinliyor", COMPETING: "Yarışıyor" };
 
 function toast(msg, err) {
   const t = $("toast");
@@ -69,7 +69,7 @@ function render(d) {
   $("intVal").value = d.activity.intervalSeconds;
 
   $("actList").replaceChildren(...d.activity.list.map((a, i) =>
-    row(a.text, TYPE[a.type] || a.type, el("button", { class: "btn sm danger", text: "Sil", onclick: e => run(e.target, async () => { await api("activity/remove", { index: i }); await load(); }, "Silindi") }))));
+    row(a.text, (TYPE[a.type] || a.type) + (a.url ? " · " + a.url : ""), el("button", { class: "btn sm danger", text: "Sil", onclick: e => run(e.target, async () => { await api("activity/remove", { index: i }); await load(); }, "Silindi") }))));
 
   const mk = (list, remove, fill) => list.map(r =>
     row(r.trigger, (r.response || "(sadece medya)") + (r.mediaUrl ? " 📎" : "") + (r.cooldownSeconds ? ` · ${r.cooldownSeconds}sn` : "") + lockSub(r),
@@ -104,7 +104,11 @@ function wire() {
     const f = e.target, body = tweak ? tweak(formData(f)) : formData(f);
     if (await run(f.querySelector("button"), async () => { await api(path, body); await load(); })) { after?.(f); }
   });
-  submit("actForm", "activity/add", null, f => (f.text.value = ""));
+  // Yayında seçilince Twitch/YouTube adresi alanı açılır.
+  const actType = $("actForm").elements.type, actUrl = $("actUrl");
+  const syncUrl = () => { const on = actType.value === "STREAMING"; actUrl.hidden = !on; actUrl.required = on; };
+  actType.addEventListener("change", syncUrl); syncUrl();
+  submit("actForm", "activity/add", d => (d.type === "STREAMING" ? d : { type: d.type, text: d.text }), f => { f.text.value = ""; f.url.value = ""; });
   submit("intForm", "activity/interval", d => ({ seconds: Number(d.seconds) }));
   submit("menForm", "mention/upsert", d => ({ ...d, allowedRoleIds: pickers.men.get() }), f => { f.reset(); pickers.men.set([]); });
   submit("autoForm", "auto/upsert", d => ({ ...d, cooldownSeconds: Number(d.cooldownSeconds) || 3, allowedRoleIds: pickers.auto.get() }), f => { f.reset(); f.cooldownSeconds.value = 3; pickers.auto.set([]); });

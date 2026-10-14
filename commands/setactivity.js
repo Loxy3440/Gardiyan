@@ -3,6 +3,7 @@ const { getActivityConfig } = require('../utils/activityConfig');
 
 const TYPE_LABELS = {
   PLAYING: 'Oynuyor (Playing)',
+  STREAMING: 'Yayinda (Streaming)',
   WATCHING: 'Izliyor (Watching)',
   LISTENING: 'Dinliyor (Listening)',
   COMPETING: 'Yarisiyor (Competing)',
@@ -10,13 +11,13 @@ const TYPE_LABELS = {
 
 function buildStatusEmbed(config) {
   const list = config.list.length
-    ? config.list.map((a, i) => `${i + 1}. **${TYPE_LABELS[a.type] || a.type}** - ${a.text}`).join('\n')
+    ? config.list.map((a, i) => `${i + 1}. **${TYPE_LABELS[a.type] || a.type}** - ${a.text}${a.url ? ` (<${a.url}>)` : ''}`).join('\n')
     : 'Tanımlı Aktivite yok, varsayilan olarak "/help" (Izliyor) gosterilir.';
 
   return new EmbedBuilder()
     .setTitle('Bot Aktivitesi (Setactivity)')
     .setColor(0x5865f2)
-    .setDescription('Botun durum yazısı (Oynuyor/Izliyor/Dinliyor/Yarışıyor) aşağıdaki listede sırayla döner.\n Bu ayar tum sunucular icin gecerlidir (global).')
+    .setDescription('Botun durum yazısı (Oynuyor/Yayında/Izliyor/Dinliyor/Yarışıyor) aşağıdaki listede sırayla döner.\n Bu ayar tum sunucular icin gecerlidir (global).')
     .addFields(
       { name: `Aktiviteler (${config.list.length})`, value: list },
       { name: 'Gecis Suresi', value: `${config.intervalSeconds} saniye`, inline: true },

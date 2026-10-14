@@ -3,7 +3,7 @@ const { getConfig, setConfig } = require('./guildConfig');
 
 const GROUPS = [
   { key: 'member', field: 'roleMemberIds', label: 'Üye rolleri', hint: 'promote/demote basamakları (alttan üste, rol sırasına göre)' },
-  { key: 'staff', field: 'roleStaffIds', label: 'Yetkili rolleri', hint: 'terfi ile verilmez, yetkililere promote/demote uygulanmaz' },
+  { key: 'staff', field: 'roleStaffIds', label: 'Yetkili rolleri', hint: 'üye rolleriyle birlikte promote/demote basamağı sayılır' },
   { key: 'bot', field: 'roleBotIds', label: 'Bot rolleri', hint: 'basamaklara girmez, botlara uygulanmaz' },
 ];
 
@@ -18,7 +18,7 @@ function buildPanel(guild, config) {
     .setTitle('Rol Grupları (Setroles)')
     .setColor(0x5865f2)
     .setDescription(
-      '`/promote` ve `/demote` sadece **üye rolleri** arasında basamak değiştirir. **Yetkili rolleri** hiçbir zaman terfi ile verilmez ve yetkili olan üyelere promote/demote uygulanmaz.\n' +
+      '`/promote` ve `/demote` **üye rolleri** ve **yetkili rolleri** arasında basamak değiştirir (rol sırasına göre, alttan üste). Burada seçilmeyen roller atlanır, botlara uygulanmaz.\n' +
         'Bir rol sadece tek grupta olabilir. Aşağıdaki menülerden seçimi güncelle (seçimi boşaltırsan grup temizlenir).',
     )
     .addFields(GROUPS.map(g => ({ name: `${g.label}`, value: `${fmt(config[g.field])}\n-# ${g.hint}` })));

@@ -25,7 +25,7 @@ const DEFAULT_CONFIG = {
   askPermRoleEnabled: true, // rol verilince izin iste
   roleBotIds: [], // /setroles: bot rolleri (promote/demote basamağına girmez)
   roleMemberIds: [], // /setroles: üye rolleri = promote/demote basamakları
-  roleStaffIds: [], // /setroles: yetkili rolleri (promote/demote ile verilmez, yetkililere uygulanmaz)
+  roleStaffIds: [], // /setroles: yetkili rolleri (üye rolleriyle birlikte promote/demote basamağı)
   tagRoleId: null, // /settag: sunucu etiketini takana verilecek rol
   tagChannelId: null, // /settag: rol verilince üyenin etiketlenip mesajın silineceği kanal
 };

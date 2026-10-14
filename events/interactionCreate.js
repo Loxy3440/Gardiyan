@@ -25,7 +25,7 @@ const {
   removeChannelBip,
 } = require('../utils/guildConfig');
 const { getWarns } = require('../utils/warns');
-const { getActivityConfig, setActivityConfig, addActivity, removeActivity } = require('../utils/activityConfig');
+const { getActivityConfig, setActivityConfig, addActivity, removeActivity, isStreamUrl } = require('../utils/activityConfig');
 const { startActivityRotation } = require('../utils/activityRotator');
 const { removeTempRole } = require('../utils/tempRoles');
 const { clearActiveTimer } = require('../utils/activeTimers');
@@ -443,6 +443,7 @@ module.exports = {
           .setPlaceholder('Aktivite turunu sec...')
           .addOptions(
             { label: 'Oynuyor (Playing)', value: 'PLAYING', emoji: '<:114361playing:1557027335818051674>' },
+            { label: 'Yayinda (Streaming)', value: 'STREAMING', emoji: '🔴' },
             { label: 'Izliyor (Watching)', value: 'WATCHING', emoji: '<:99270bearpeek:1557027531016765511>' },
             { label: 'Dinliyor (Listening)', value: 'LISTENING', emoji: '<:8945voiceheadphones:1557027795031298188>' },
             { label: 'Yarisiyor (Competing)', value: 'COMPETING', emoji: '<:55902trophy:1557027982789443694>' },
@@ -514,6 +515,18 @@ module.exports = {
         .setPlaceholder('ornek: /help   veya   {uye} uye (anlik uye sayisi)');
 
       modal.addComponents(new ActionRowBuilder().addComponents(textInput));
+
+      // Yayinda (Streaming) icin Twitch/YouTube adresi de gerekir; yoksa Discord yayin gostergesini vermez.
+      if (type === 'STREAMING') {
+        const urlInput = new TextInputBuilder()
+          .setCustomId('activity_url')
+          .setLabel('Twitch veya YouTube adresi')
+          .setStyle(TextInputStyle.Short)
+          .setRequired(true)
+          .setMaxLength(200)
+          .setPlaceholder('https://www.twitch.tv/kullanici');
+        modal.addComponents(new ActionRowBuilder().addComponents(urlInput));
+      }
       return interaction.showModal(modal);
     }
 
@@ -521,8 +534,15 @@ module.exports = {
     if (interaction.isModalSubmit() && interaction.customId.startsWith('setactivity_modal_addtext_')) {
       const type = interaction.customId.replace('setactivity_modal_addtext_', '');
       const text = interaction.fields.getTextInputValue('activity_text');
+      let url = null;
+      if (type === 'STREAMING') {
+        url = interaction.fields.getTextInputValue('activity_url').trim();
+        if (!isStreamUrl(url)) {
+          return interaction.reply({ embeds: [errorEmbed('Yayın adresi `https://twitch.tv/...` veya `https://youtube.com/...` şeklinde olmalı.')], ephemeral: true });
+        }
+      }
 
-      await addActivity(type, text);
+      await addActivity(type, text, url);
       await startActivityRotation(interaction.client);
 
       const setactivityCmd = interaction.client.commands.get('setactivity');

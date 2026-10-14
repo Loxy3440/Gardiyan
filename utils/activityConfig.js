@@ -4,7 +4,7 @@ const { getDb } = require('./db');
 const DOC_ID = 'activity';
 
 const DEFAULT_ACTIVITY_CONFIG = {
-  list: [], // [{ type: 'PLAYING'|'WATCHING'|'LISTENING'|'COMPETING', text: '/help' }, ...]
+  list: [], // [{ type: 'PLAYING'|'WATCHING'|'LISTENING'|'COMPETING'|'STREAMING', text: '/help', url?: 'https://twitch.tv/...' }, ...]
   intervalSeconds: 15,
 };
 
@@ -19,9 +19,16 @@ async function setActivityConfig(update) {
   await db.collection('botConfig').updateOne({ _id: DOC_ID }, { $set: update }, { upsert: true });
 }
 
-async function addActivity(type, text) {
+// Streaming (Yayinda) durumu icin Discord sadece Twitch veya YouTube adresi kabul eder.
+function isStreamUrl(url) {
+  return /^https:\/\/(www\.|m\.)?(twitch\.tv|youtube\.com|youtu\.be)\/\S+$/i.test(String(url || '').trim());
+}
+
+async function addActivity(type, text, url = null) {
   const config = await getActivityConfig();
-  const list = [...config.list, { type, text }];
+  const entry = { type, text };
+  if (type === 'STREAMING') entry.url = String(url).trim();
+  const list = [...config.list, entry];
   await setActivityConfig({ list });
   return list;
 }
@@ -33,4 +40,4 @@ async function removeActivity(index) {
   return list;
 }
 
-module.exports = { getActivityConfig, setActivityConfig, addActivity, removeActivity };
+module.exports = { getActivityConfig, setActivityConfig, addActivity, removeActivity, isStreamUrl };

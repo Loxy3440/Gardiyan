@@ -4,11 +4,11 @@ const { registerCommandGrant, needsApproval } = require('../utils/askPerm');
 const { getConfig } = require('../utils/guildConfig');
 const { getLadder, currentRank, blockedReason } = require('../utils/rankLadder');
 
-// /promote'un tersi: üyenin en yüksek üye rolünü alır, bir alttakini verir.
+// /promote'un tersi: üyenin basamaklardaki (üye + yetkili) en yüksek rolünü alır, bir alttakini verir.
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('demote')
-    .setDescription('Üyenin rolünü alıp bir alt üye rolünü verir (yetkililere uygulanmaz).')
+    .setDescription('Üyenin rolünü alıp üye/yetkili basamaklarında bir alttaki rolü verir.')
     .addUserOption(opt => opt.setName('uye').setDescription('Rütbesi düşürülecek üye').setRequired(true))
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
 
@@ -21,17 +21,17 @@ module.exports = {
     const config = await getConfig(interaction.guild.id);
     const info = getLadder(interaction.guild, config);
 
-    const blocked = blockedReason(member, info);
+    const blocked = blockedReason(member);
     if (blocked) return interaction.reply({ embeds: [warningEmbed('İşlem Yapılamaz', blocked)], ephemeral: true });
 
     const { index, role: currentTop } = currentRank(member, info.ladder);
     if (!currentTop) {
-      return interaction.reply({ embeds: [warningEmbed('Rütbe Yok', `**${member.user.tag}** üye rolü basamaklarında bir role sahip değil.`)], ephemeral: true });
+      return interaction.reply({ embeds: [warningEmbed('Rütbe Yok', `**${member.user.tag}** üye/yetkili basamaklarında bir role sahip değil.`)], ephemeral: true });
     }
 
     const prevRole = info.ladder[index - 1];
     if (!prevRole) {
-      return interaction.reply({ embeds: [warningEmbed('Zaten En Alt Seviyede', `**${member.user.tag}** zaten en alt üye rolünde (**${currentTop.name}**).`)], ephemeral: true });
+      return interaction.reply({ embeds: [warningEmbed('Zaten En Alt Seviyede', `**${member.user.tag}** zaten en alt basamakta (**${currentTop.name}**).`)], ephemeral: true });
     }
 
     const me = interaction.guild.members.me;
