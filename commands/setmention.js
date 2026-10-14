@@ -1,9 +1,10 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
 const { getConfig } = require('../utils/guildConfig');
+const { lockText } = require('../utils/triggerRoles');
 
 function buildStatusEmbed(config) {
   const list = config.mentionTriggers.length
-    ? config.mentionTriggers.map(r => `\`${r.trigger}\` -> ${r.response || '*(sadece medya)*'}${r.mediaUrl ? ' 📎' : ''}`).join('\n')
+    ? config.mentionTriggers.map(r => `\`${r.trigger}\` -> ${r.response || '*(sadece medya)*'}${r.mediaUrl ? ' 📎' : ''}${lockText(r)}`).join('\n')
     : 'Tanimli ozel etiketlenme cevabi yok.';
 
   return new EmbedBuilder()
@@ -20,6 +21,7 @@ function buildSelectRow() {
     .setPlaceholder('Yönet')
     .addOptions(
       { label: 'Ekle / Güncelle', value: 'add_mentiontrigger', emoji: '<:517044plussign:1556735103097372834>' },
+      { label: 'Rol Sınırı (kim kullanabilir)', value: 'roles_mention', emoji: '🔒' },
       { label: 'Sil', value: 'remove_mentiontrigger', emoji: '<:delete:1556735111129731072>' },
     );
 

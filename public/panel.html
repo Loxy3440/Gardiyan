@@ -31,6 +31,7 @@
       <button data-tab="activity" class="on">Aktivite</button>
       <button data-tab="mention">Etiket cevapları</button>
       <button data-tab="auto">Otomatik mesaj</button>
+      <button data-tab="roles">Roller</button>
       <button data-tab="members">Üyeler</button>
       <button data-tab="commands">Tüm komutlar</button>
     </nav>
@@ -67,6 +68,7 @@
           <input name="trigger" maxlength="100" placeholder="Tetikleyici (ör. naber)" required>
           <textarea name="response" maxlength="1800" rows="3" placeholder="Cevap"></textarea>
           <input name="mediaUrl" maxlength="500" placeholder="Medya adresi (isteğe bağlı)">
+          <div class="fld"><label>Kullanabilecek roller</label><div id="menRoles"></div><div class="d">Boş bırakırsan herkes kullanır. Rol seçersen sadece o rollerdekilere cevap verir.</div></div>
           <button class="btn">Ekle / güncelle</button>
         </form>
       </div>
@@ -82,8 +84,20 @@
           <textarea name="response" maxlength="1800" rows="3" placeholder="Cevap"></textarea>
           <input name="mediaUrl" maxlength="500" placeholder="Medya adresi (isteğe bağlı)">
           <div class="row"><label>Bekleme (sn)</label><input name="cooldownSeconds" type="number" min="1" max="3600" value="3"></div>
+          <div class="fld"><label>Kullanabilecek roller</label><div id="autoRoles"></div><div class="d">Boş bırakırsan herkes kullanır. Rol seçersen sadece o rollerdekilere cevap verir.</div></div>
           <button class="btn">Ekle / güncelle</button>
         </form>
+      </div>
+    </section>
+
+    <section class="pane" id="pane-roles" hidden>
+      <div class="box">
+        <h2>Rol grupları</h2>
+        <p class="hint"><code>/promote</code> ve <code>/demote</code> sadece <b>üye rolleri</b> arasında basamak değiştirir (rol sırasına göre, alttan üste). <b>Yetkili rolleri</b> terfi ile asla verilmez ve yetkili olan üyelere promote/demote uygulanmaz. Bir rol tek grupta olabilir. Üye rollerini boş bırakırsan eski gibi tüm roller basamak sayılır (yetkili ve bot rolleri hariç).</p>
+        <div class="fld"><label>Üye rolleri</label><div id="grpMember"></div></div>
+        <div class="fld"><label>Yetkili rolleri</label><div id="grpStaff"></div></div>
+        <div class="fld"><label>Bot rolleri</label><div id="grpBot"></div></div>
+        <div class="row"><button class="btn" id="grpSave" type="button">Kaydet</button></div>
       </div>
     </section>
 

@@ -1,4 +1,4 @@
-const { getConfig } = require('../utils/guildConfig');
+const { getConfig, canUseTrigger } = require('../utils/guildConfig');
 const { getActiveEvent, isWinningMessage, claimWinner, applyPlaceholders } = require('../utils/events');
 
 // /trigger icin bellek-ici bekleme (cooldown) takibi. Bot yeniden baslatilinca sifirlanir, bu kasitli.
@@ -90,6 +90,8 @@ module.exports = {
           : null;
 
         if (specific) {
+          // Rol sınırı varsa ve yazan o rollerden birine sahip değilse bot sessiz kalır.
+          if (!canUseTrigger(specific, message.member)) return;
           const parts = [];
           if (specific.response) parts.push(specific.response);
           if (specific.mediaUrl) parts.push(specific.mediaUrl);
@@ -124,6 +126,7 @@ module.exports = {
 
       const match = config.autoResponses.find(r => r.trigger.trim().toLowerCase() === content);
       if (!match) return;
+      if (!canUseTrigger(match, message.member)) return; // rol sınırı: yetkisiz kişiye cevap yok (bekleme sayacı da başlamaz)
 
       // ---------- SPAM ONLEME: ayni kullanici ayni tetikleyiciyi hemen tekrar yazarsa bekletiriz ----------
       const cooldownSeconds = match.cooldownSeconds || 3;

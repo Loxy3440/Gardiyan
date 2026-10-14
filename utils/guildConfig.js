@@ -23,6 +23,9 @@ const DEFAULT_CONFIG = {
   askPermRoleId: null, // /askperm: kararı verebilecek kurucu rolü
   askPermBotEnabled: true, // bot eklenince izin iste
   askPermRoleEnabled: true, // rol verilince izin iste
+  roleBotIds: [], // /setroles: bot rolleri (promote/demote basamağına girmez)
+  roleMemberIds: [], // /setroles: üye rolleri = promote/demote basamakları
+  roleStaffIds: [], // /setroles: yetkili rolleri (promote/demote ile verilmez, yetkililere uygulanmaz)
   tagRoleId: null, // /settag: sunucu etiketini takana verilecek rol
   tagChannelId: null, // /settag: rol verilince üyenin etiketlenip mesajın silineceği kanal
 };
@@ -41,11 +44,14 @@ async function setConfig(guildId, update) {
 // Ayni tetikleyici (buyuk/kucuk harf onemsiz) varsa cevabini gunceller, yoksa yenisini ekler.
 // cooldownSeconds: ayni kullanici ayni tetikleyiciyi bu sure dolmadan tekrar yazarsa,
 // bot cevabi tekrar vermez, bunun yerine kac saniye kaldigini soyler (spam onleme).
-async function upsertAutoResponse(guildId, trigger, response, mediaUrl = null, cooldownSeconds = 3) {
+async function upsertAutoResponse(guildId, trigger, response, mediaUrl = null, cooldownSeconds = 3, allowedRoleIds = undefined) {
   const config = await getConfig(guildId);
   const normalized = trigger.trim();
+  const previous = config.autoResponses.find(r => r.trigger.toLowerCase() === normalized.toLowerCase());
   const list = config.autoResponses.filter(r => r.trigger.toLowerCase() !== normalized.toLowerCase());
-  list.push({ trigger: normalized, response: response || '', mediaUrl: mediaUrl || null, cooldownSeconds: cooldownSeconds || 3 });
+  // allowedRoleIds verilmezse eski rol sınırı korunur (düzenleyince sıfırlanmasın).
+  const roles = allowedRoleIds !== undefined ? allowedRoleIds : previous?.allowedRoleIds || [];
+  list.push({ trigger: normalized, response: response || '', mediaUrl: mediaUrl || null, cooldownSeconds: cooldownSeconds || 3, allowedRoleIds: roles });
   await setConfig(guildId, { autoResponses: list });
   return list;
 }
@@ -58,11 +64,13 @@ async function removeAutoResponse(guildId, trigger) {
 }
 
 // Ayni tetikleyici (buyuk/kucuk harf onemsiz) varsa cevabini gunceller, yoksa yenisini ekler.
-async function upsertMentionTrigger(guildId, trigger, response, mediaUrl = null) {
+async function upsertMentionTrigger(guildId, trigger, response, mediaUrl = null, allowedRoleIds = undefined) {
   const config = await getConfig(guildId);
   const normalized = trigger.trim();
+  const previous = config.mentionTriggers.find(r => r.trigger.toLowerCase() === normalized.toLowerCase());
   const list = config.mentionTriggers.filter(r => r.trigger.toLowerCase() !== normalized.toLowerCase());
-  list.push({ trigger: normalized, response: response || '', mediaUrl: mediaUrl || null });
+  const roles = allowedRoleIds !== undefined ? allowedRoleIds : previous?.allowedRoleIds || [];
+  list.push({ trigger: normalized, response: response || '', mediaUrl: mediaUrl || null, allowedRoleIds: roles });
   await setConfig(guildId, { mentionTriggers: list });
   return list;
 }
@@ -122,7 +130,27 @@ async function removeChannelBip(guildId, channelId) {
   return list;
 }
 
+// Listedeki (sıra numarasıyla) tetikleyicinin rol sınırını değiştirir. [] = herkes kullanabilir.
+async function setTriggerRoles(guildId, kind, index, roleIds) {
+  const field = kind === 'auto' ? 'autoResponses' : 'mentionTriggers';
+  const config = await getConfig(guildId);
+  const list = [...config[field]];
+  if (!list[index]) return null;
+  list[index] = { ...list[index], allowedRoleIds: roleIds };
+  await setConfig(guildId, { [field]: list });
+  return list[index];
+}
+
+// Bu üye bu tetikleyiciyi kullanabilir mi? (rol sınırı yoksa herkes kullanır)
+function canUseTrigger(entry, member) {
+  const ids = entry?.allowedRoleIds;
+  if (!ids || !ids.length) return true;
+  return Boolean(member?.roles?.cache?.hasAny(...ids));
+}
+
 module.exports = {
+  setTriggerRoles,
+  canUseTrigger,
   getConfig,
   setConfig,
   upsertAutoResponse,

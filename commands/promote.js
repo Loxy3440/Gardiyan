@@ -1,13 +1,15 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { errorEmbed, successEmbed, warningEmbed } = require('../utils/embeds');
 const { registerCommandGrant, needsApproval } = require('../utils/askPerm');
+const { getConfig } = require('../utils/guildConfig');
+const { getLadder, currentRank, blockedReason } = require('../utils/rankLadder');
 
-// Uyeyi, atanabilir roller listesinde (pozisyona gore siralanmis) bir sonraki
-// role yukseltir. Onceki en yuksek rolu kaldirir, yeni rolu ekler.
+// Üyeyi "üye rolleri" basamaklarında bir üst role çıkarır (/setroles ile ayarlanır).
+// Yetkili rollerine terfi vermez; yetkili olan üyelere uygulanmaz.
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('promote')
-    .setDescription('Üyeyi rol hiyerarsisinde bir sonraki role yükseltir.')
+    .setDescription('Üyeyi üye rolleri arasında bir üst role yükseltir (yetkili rollerine geçmez).')
     .addUserOption(opt => opt.setName('uye').setDescription('Yükseltilecek üye').setRequired(true))
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
 
@@ -17,38 +19,31 @@ module.exports = {
       return interaction.reply({ embeds: [errorEmbed('Bu uye sunucuda bulunamadı.')], ephemeral: true });
     }
 
-    const assignableRoles = interaction.guild.roles.cache
-      .filter(r => !r.managed && r.id !== interaction.guild.id)
-      .sort((a, b) => a.position - b.position);
+    const config = await getConfig(interaction.guild.id);
+    const info = getLadder(interaction.guild, config);
 
-    if (assignableRoles.size === 0) {
-      return interaction.reply({ embeds: [warningEmbed('Rol Yok', 'Sunucuda atanabilir rol bulunamadı.')], ephemeral: true });
+    const blocked = blockedReason(member, info);
+    if (blocked) return interaction.reply({ embeds: [warningEmbed('İşlem Yapılamaz', blocked)], ephemeral: true });
+
+    if (!info.ladder.length) {
+      return interaction.reply({ embeds: [warningEmbed('Rol Yok', 'Terfi için üye rolü bulunamadı. `/setroles` ile üye rollerini ayarla.')], ephemeral: true });
     }
 
-    const rolesArray = [...assignableRoles.values()];
-    const memberRoles = rolesArray.filter(r => member.roles.cache.has(r.id));
-    const currentTop = memberRoles.length ? memberRoles[memberRoles.length - 1] : null;
-
-    let nextRole;
-    if (!currentTop) {
-      nextRole = rolesArray[0];
-    } else {
-      const currentIndex = rolesArray.findIndex(r => r.id === currentTop.id);
-      nextRole = rolesArray[currentIndex + 1];
-    }
+    const { index, role: currentTop } = currentRank(member, info.ladder);
+    const nextRole = info.ladder[index + 1];
 
     if (!nextRole) {
-      return interaction.reply({ embeds: [warningEmbed('Zaten En Ust Seviyede', `**${member.user.tag}** zaten en yuksek rolde.`)], ephemeral: true });
+      const extra = info.staff.size ? ' Bir üst basamak yetkili rolleri olduğu için terfi verilmez.' : '';
+      return interaction.reply({ embeds: [warningEmbed('Zaten En Üst Seviyede', `**${member.user.tag}** üye rollerinin en yükseğinde.${extra}`)], ephemeral: true });
     }
 
     if (nextRole.position >= interaction.guild.members.me.roles.highest.position) {
       return interaction.reply({ embeds: [errorEmbed('Bu rolu veremiyorum, botun rolu yeterince yuksek degil.')], ephemeral: true });
     }
 
-    const pending = await needsApproval(interaction.guild); // onay gerekecek mi?
+    const pending = await needsApproval(interaction.guild);
 
     try {
-      // Onay gerekiyorsa eski rol şimdi alınmaz, yeni rol onaylanınca eski rol otomatik alınır.
       registerCommandGrant(interaction.guild.id, member.id, nextRole.id, interaction.user.id, { replaceRoleId: currentTop?.id });
       await member.roles.add(nextRole, `Promote - Yetkili: ${interaction.user.tag}`);
       if (currentTop && !pending) {

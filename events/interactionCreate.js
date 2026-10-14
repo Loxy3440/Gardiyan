@@ -33,6 +33,8 @@ const { handleEventInteraction } = require('../utils/eventListUI');
 const { handleInviteInteraction } = require('../utils/inviteUI');
 const { handleYtSendInteraction } = require('../utils/ytSendUI');
 const { handleAskPermInteraction } = require('../utils/askPerm');
+const { handleRoleGroupsInteraction } = require('../utils/roleGroups');
+const { handleTriggerRolesInteraction } = require('../utils/triggerRoles');
 
 module.exports = {
   name: 'interactionCreate',
@@ -68,6 +70,10 @@ module.exports = {
 
     // ---------- /askperm (bot ekleme / rol verme izni) ----------
     if (await handleAskPermInteraction(interaction)) return;
+
+    // ---------- /setroles (rol grupları) ve /auto /setmention rol sınırı ----------
+    if (await handleRoleGroupsInteraction(interaction)) return;
+    if (await handleTriggerRolesInteraction(interaction)) return;
 
     // ---------- HELP DROPDOWN MENUSU ----------
     if (interaction.isStringSelectMenu() && interaction.customId === 'help_category') {

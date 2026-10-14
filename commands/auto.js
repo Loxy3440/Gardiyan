@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
 const { getConfig } = require('../utils/guildConfig');
+const { lockText } = require('../utils/triggerRoles');
 
 // Embed alanlari en fazla 1024 karakter olabilir; uzun cevaplar kisaltilir ki /auto asla hata vermesin.
 const FIELD_LIMIT = 900;
@@ -18,7 +19,7 @@ function buildStatusEmbed(config) {
     let used = 0;
     for (const r of config.autoResponses) {
       const trigger = shorten(r.trigger, 40).replace(/`/g, "'");
-      const line = `\`${trigger}\` -> ${r.response ? shorten(r.response, 80) : '*(sadece medya)*'}${r.mediaUrl ? ' 📎' : ''} *(${r.cooldownSeconds || 3}sn)*`;
+      const line = `\`${trigger}\` -> ${r.response ? shorten(r.response, 80) : '*(sadece medya)*'}${r.mediaUrl ? ' 📎' : ''} *(${r.cooldownSeconds || 3}sn)*${lockText(r)}`;
       if (used + line.length + 1 > FIELD_LIMIT) break;
       lines.push(line);
       used += line.length + 1;
@@ -42,6 +43,7 @@ function buildSelectRow() {
     .setPlaceholder('Yönet')
     .addOptions(
       { label: 'Ekle / Güncelle', value: 'add_autoresponse', emoji: '<:517044plussign:1556735103097372834>' },
+      { label: 'Rol Sınırı (kim kullanabilir)', value: 'roles_auto', emoji: '🔒' },
       { label: 'Sil', value: 'remove_autoresponse', emoji: '<:delete:1556735111129731072>' },
       { label: 'Tümünü Temizle', value: 'clear_autoresponses', emoji: '<:delete:1556735111129731072>' },
     );

@@ -68,3 +68,10 @@ textarea{resize:vertical}
 .emb img{max-width:100%;border-radius:8px;margin-top:8px}
 .txt-out{white-space:pre-wrap;margin-bottom:10px;overflow-wrap:anywhere}
 .spin{color:var(--mute);font-size:14px}
+
+/* ---- rol seçici ---- */
+.rp .chips2{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.rp .chips2:empty{display:none}
+.rp .c{display:inline-flex;align-items:center;gap:6px;background:var(--panel-2);border:1px solid var(--line);border-radius:999px;padding:4px 6px 4px 12px;font-size:14px}
+.rp .c button{background:none;border:0;color:var(--mute);cursor:pointer;font-size:16px;line-height:1;padding:2px 6px}
+.rp .c button:hover{color:#ff9b9b}
