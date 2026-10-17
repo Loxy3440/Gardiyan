@@ -26,6 +26,9 @@ const DEFAULT_CONFIG = {
   roleBotIds: [], // /setroles: bot rolleri (promote/demote basamağına girmez)
   roleMemberIds: [], // /setroles: üye rolleri = promote/demote basamakları
   roleStaffIds: [], // /setroles: yetkili rolleri (üye rolleriyle birlikte promote/demote basamağı)
+  countChannelId: null, // /ckanal: kanal adında toplam üye sayısı gösterilecek kanal
+  countFormat: 'Üye Sayısı: {sayi}', // /ckanal: kanal adı şablonu
+  autoRankup: { enabled: false, channelId: null, enabledAt: null, steps: [] }, // /autorankup: [{ roleId, invites }] - ilk rol başlangıç, sonrakiler "bir önceki rolden sonra" gereken davet
   tagRoleId: null, // /settag: sunucu etiketini takana verilecek rol
   tagChannelId: null, // /settag: rol verilince üyenin etiketlenip mesajın silineceği kanal
 };

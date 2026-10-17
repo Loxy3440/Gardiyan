@@ -7,6 +7,7 @@ const { startActivityRotation } = require('../utils/activityRotator');
 const { loadActiveEvents, runDueEvents } = require('../utils/events');
 const { cacheGuildInvites } = require('../utils/inviteTracker');
 const { startTagSweep } = require('../utils/tagRole');
+const { startCountSweep } = require('../utils/countChannel');
 
 module.exports = {
   name: 'clientReady',
@@ -16,6 +17,7 @@ module.exports = {
     console.log(`[LATENCY] Gateway ping: ${Math.round(client.ws.ping)}ms`);
     await startActivityRotation(client);
     startTagSweep(client);
+    startCountSweep(client);
 
     // /vcc ile ayarlanmis ses kanali varsa, her sunucuda bota otomatik baglan (mikrofon+kulaklik kapali).
     for (const guild of client.guilds.cache.values()) {

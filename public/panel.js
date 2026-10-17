@@ -79,6 +79,51 @@ function render(d) {
   const fillForm = (form, r, picker) => { for (const k of ["trigger", "response", "mediaUrl", "cooldownSeconds"]) if (form[k]) form[k].value = r[k] ?? (k === "cooldownSeconds" ? 3 : ""); picker.set(r.allowedRoleIds); form.scrollIntoView({ behavior: "smooth", block: "center" }); };
   $("menList").replaceChildren(...mk(d.mentionTriggers, "mention/remove", r => fillForm($("menForm"), r, pickers.men)));
   $("autoList").replaceChildren(...mk(d.autoResponses, "auto/remove", r => fillForm($("autoForm"), r, pickers.auto)));
+  renderRankup(d);
+}
+
+// ---- Auto rank up ----
+const RK = { enabled: false, channelId: "", steps: [], channels: [], dirty: false };
+function renderRankup(d) {
+  if (!RK.dirty && d.autoRankup) { RK.enabled = !!d.autoRankup.enabled; RK.channelId = d.autoRankup.channelId || ""; RK.steps = d.autoRankup.steps.map(s => ({ ...s })); }
+  RK.channels = d.channels || [];
+  drawRankup();
+}
+function drawRankup() {
+  $("rkEnabled").checked = RK.enabled;
+  $("rkChannel").replaceChildren(el("option", { value: "", text: "Duyuru yok" }), ...RK.channels.map(c => el("option", { value: c.id, text: "#" + c.name })));
+  $("rkChannel").value = RK.channelId;
+  $("rkRole").replaceChildren(el("option", { value: "", text: RK.steps.length ? "Sıradaki rol…" : "Başlangıç rolü…" }),
+    ...ROLES.filter(r => !r.managed && !RK.steps.some(s => s.roleId === r.id)).map(r => el("option", { value: r.id, text: "@" + r.name })));
+  $("rkInv").hidden = RK.steps.length === 0; // ilk rol (başlangıç) için davet gerekmez
+  const move = (i, to) => { const [x] = RK.steps.splice(i, 1); RK.steps.splice(to, 0, x); RK.dirty = true; drawRankup(); };
+  $("rkList").replaceChildren(...RK.steps.map((s, i) => row(
+    (i + 1) + ". @" + roleName(s.roleId),
+    i === 0 ? "Başlangıç rolü (davet gerekmez)" : "Bir önceki rolden sonra " + (Number(s.invites) || 1) + " davet · rank alınca sayaç sıfırlanır",
+    i > 0 ? el("button", { class: "btn sm alt", type: "button", text: "▲", "aria-label": "Yukarı", onclick: () => move(i, i - 1) }) : null,
+    i < RK.steps.length - 1 ? el("button", { class: "btn sm alt", type: "button", text: "▼", "aria-label": "Aşağı", onclick: () => move(i, i + 1) }) : null,
+    i > 0 ? el("button", { class: "btn sm alt", type: "button", text: "Davet", onclick: () => { const n = Math.floor(Number(prompt("Gereken davet (1-1000):", s.invites || 1))); if (n >= 1 && n <= 1000) { s.invites = n; RK.dirty = true; drawRankup(); } } }) : null,
+    el("button", { class: "btn sm danger", type: "button", text: "Sil", onclick: () => { RK.steps.splice(i, 1); RK.dirty = true; drawRankup(); } }))));
+}
+function wireRankup() {
+  $("rkEnabled").addEventListener("change", e => { RK.enabled = e.target.checked; RK.dirty = true; });
+  $("rkChannel").addEventListener("change", e => { RK.channelId = e.target.value; RK.dirty = true; });
+  $("rkForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const roleId = $("rkRole").value;
+    if (!roleId) return toast("Bir rol seç", true);
+    let invites = 0;
+    if (RK.steps.length) {
+      invites = Math.floor(Number($("rkInv").value));
+      if (!(invites >= 1 && invites <= 1000)) return toast("Gereken davet 1 ile 1000 arasında olmalı", true);
+    }
+    RK.steps.push({ roleId, invites }); RK.dirty = true; $("rkInv").value = ""; drawRankup();
+  });
+  $("rkSave").addEventListener("click", e => run(e.target, async () => {
+    await api("rankup/save", { enabled: $("rkEnabled").checked, channelId: $("rkChannel").value, steps: RK.steps.map((s, i) => ({ roleId: s.roleId, invites: i === 0 ? 0 : Math.max(1, Number(s.invites) || 1) })) });
+    RK.dirty = false;
+    await load();
+  }, "Auto rank up kaydedildi"));
 }
 
 async function load() { render(await api("overview")); }
@@ -93,6 +138,7 @@ function wire() {
     await load();
   }, "Roller kaydedildi"));
 
+  wireRankup();
   $("tabs").addEventListener("click", e => {
     const b = e.target.closest("button[data-tab]"); if (!b) return;
     document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x === b));

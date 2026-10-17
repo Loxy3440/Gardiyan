@@ -75,3 +75,6 @@ textarea{resize:vertical}
 .rp .c{display:inline-flex;align-items:center;gap:6px;background:var(--panel-2);border:1px solid var(--line);border-radius:999px;padding:4px 6px 4px 12px;font-size:14px}
 .rp .c button{background:none;border:0;color:var(--mute);cursor:pointer;font-size:16px;line-height:1;padding:2px 6px}
 .rp .c button:hover{color:#ff9b9b}
+.chk{display:flex;align-items:center;gap:8px;margin-top:10px;color:var(--ink)}
+.chk input{width:auto}
+.row #rkRole{flex:1;min-width:0}

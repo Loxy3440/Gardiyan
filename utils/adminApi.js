@@ -6,6 +6,7 @@ const { parseDuration } = require('./parseDuration');
 const { clearActiveTimer } = require('./activeTimers');
 const { STATS_GUILD_ID } = require('./activityRotator');
 const runner = require('./commandRunner');
+const { getSettings: getRankupSettings, saveSettings: saveRankupSettings, validateSteps, RankupError } = require('./autoRankup');
 
 const TYPES = ['PLAYING', 'STREAMING', 'WATCHING', 'LISTENING', 'COMPETING'];
 const MAX_TIMEOUT_MS = 28 * 24 * 60 * 60 * 1000;
@@ -60,6 +61,8 @@ const handlers = {
       autoResponses: config.autoResponses || [],
       roles: [...guild.roles.cache.values()].filter(r => r.id !== guild.id).sort((a, b) => b.position - a.position).map(r => ({ id: r.id, name: r.name, managed: r.managed })),
       roleGroups: { member: config.roleMemberIds || [], staff: config.roleStaffIds || [], bot: config.roleBotIds || [] },
+      autoRankup: (({ enabled, channelId, steps }) => ({ enabled, channelId, steps }))(getRankupSettings(config)),
+      channels: [...guild.channels.cache.values()].filter(c => c.type === 0 || c.type === 5).sort((a, b) => a.rawPosition - b.rawPosition).map(c => ({ id: c.id, name: c.name })),
     };
   },
 
@@ -147,6 +150,31 @@ const handlers = {
       }
     }
     await setConfig(guild.id, Object.fromEntries(Object.entries(groups).filter(([, v]) => v !== undefined)));
+    return { ok: true };
+  },
+
+  // ---- auto rank up (/autorankup) ----
+  'POST rankup/save': async (client, b) => {
+    const guild = getGuild(client);
+    const current = getRankupSettings(await getConfig(guild.id));
+    let steps;
+    try {
+      steps = validateSteps(guild, b.steps);
+    } catch (err) {
+      if (err instanceof RankupError) throw new ApiError(400, err.message);
+      throw err;
+    }
+    const enabled = Boolean(b.enabled);
+    if (enabled && steps.length < 2) throw new ApiError(400, 'Açmak için en az 2 rol gerekli (başlangıç rolü + bir üst rol).');
+    let channelId = null;
+    if (b.channelId) {
+      const ch = guild.channels.cache.get(String(b.channelId));
+      if (!ch || !ch.isTextBased?.()) throw new ApiError(400, 'Duyuru kanalı geçersiz.');
+      channelId = ch.id;
+    }
+    // Sistem kapalıyken açılırsa davetler o andan itibaren sayılır.
+    const enabledAt = enabled ? (current.enabled && current.enabledAt ? current.enabledAt : new Date()) : current.enabledAt;
+    await saveRankupSettings(guild.id, { enabled, channelId, steps, enabledAt });
     return { ok: true };
   },
 

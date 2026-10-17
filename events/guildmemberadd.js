@@ -3,16 +3,21 @@ const { getConfig } = require('../utils/guildConfig');
 const { handleBotJoin, registerCommandGrant } = require('../utils/askPerm');
 const { recordJoin } = require('../utils/inviteTracker');
 const { syncMember } = require('../utils/tagRole');
+const { scheduleUpdate } = require('../utils/countChannel');
+const { checkInviter } = require('../utils/autoRankup');
 
 module.exports = {
   name: 'guildMemberAdd',
   once: false,
   async execute(member) {
     refreshActivity(member.client);
+    scheduleUpdate(member.guild);
     syncMember(member).catch(err => console.error('[TAG]', err));
     // Hangi davetle geldigini kaydet (hata verse bile diger islemler devam etsin).
     try {
-      await recordJoin(member);
+      const joinDoc = await recordJoin(member);
+      // Davet eden yeterli davete ulaştıysa bir üst role çıkar (auto rank up).
+      if (joinDoc?.inviterId) checkInviter(member.guild, joinDoc.inviterId).catch(err => console.error('[AUTORANKUP]', err));
     } catch (err) {
       console.error('[INVITE TRACK]', err);
     }
