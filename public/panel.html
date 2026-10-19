@@ -107,8 +107,12 @@
     <section class="pane" id="pane-rankup" hidden>
       <div class="box">
         <h2>Auto rank up</h2>
-        <p class="hint">Üye, bir rolü aldığı andan itibaren yaptığı davetler sayılır; sıradaki rol için gereken davete ulaşınca bot rolü otomatik verir (<code>/autorankup</code>). <b>Her rank atlayışta davet sayacı 0'dan başlar.</b> İlk rol başlangıç rolüdür; diğerlerinde "bir önceki rolden sonra" kaç davet gerektiğini yaz. Sayılan davetler: sunucuda kalan, yan hesap olmayan kişiler.</p>
-        <label class="chk"><input type="checkbox" id="rkEnabled"> Sistem açık</label>
+        <p class="hint">Üye, bir rolü aldığı andan itibaren yaptığı davetler sayılır; sıradaki rol için gereken davete ulaşınca bot rolü otomatik verir (<code>/autorankup</code>). <b>Her rank atlayışta davet sayacı 0'dan başlar.</b> İlk rol başlangıç rolüdür; diğerlerinde "bir önceki rolden sonra" kaç davet gerektiğini yaz. Sayılan davetler: sunucuda kalan, yan hesap olmayan kişiler. <b>Üye</b> ve <b>Yetkili</b> kategorileri birbirinden bağımsızdır; bir rol sadece tek kategoride olabilir. Kaydet, açık olan kategoriyi kaydeder.</p>
+        <nav class="tabs" id="rkCats" role="tablist">
+          <button type="button" data-cat="uye" class="on">Üye</button>
+          <button type="button" data-cat="yetkili">Yetkili</button>
+        </nav>
+        <label class="chk"><input type="checkbox" id="rkEnabled"> <span id="rkEnabledText">Sistem açık</span></label>
         <div class="fld"><label>Duyuru kanalı (isteğe bağlı)</label><select id="rkChannel"></select></div>
         <ul class="list" id="rkList"></ul>
         <form id="rkForm" class="row">

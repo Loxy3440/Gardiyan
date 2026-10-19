@@ -82,50 +82,65 @@ function render(d) {
   renderRankup(d);
 }
 
-// ---- Auto rank up ----
-const RK = { enabled: false, channelId: "", steps: [], channels: [], dirty: false };
+// ---- Auto rank up (iki kategori: üye / yetkili) ----
+const RK_CATS = { uye: "Üye", yetkili: "Yetkili" };
+const rkEmpty = () => ({ enabled: false, channelId: "", steps: [] });
+const RK = { cat: "uye", data: { uye: rkEmpty(), yetkili: rkEmpty() }, dirty: { uye: false, yetkili: false }, channels: [] };
+const rkCur = () => RK.data[RK.cat];
 function renderRankup(d) {
-  if (!RK.dirty && d.autoRankup) { RK.enabled = !!d.autoRankup.enabled; RK.channelId = d.autoRankup.channelId || ""; RK.steps = d.autoRankup.steps.map(s => ({ ...s })); }
+  for (const c of Object.keys(RK_CATS)) {
+    const s = d.autoRankup && d.autoRankup[c];
+    if (s && !RK.dirty[c]) RK.data[c] = { enabled: !!s.enabled, channelId: s.channelId || "", steps: s.steps.map(x => ({ ...x })) };
+  }
   RK.channels = d.channels || [];
   drawRankup();
 }
 function drawRankup() {
-  $("rkEnabled").checked = RK.enabled;
+  const cur = rkCur(), label = RK_CATS[RK.cat];
+  document.querySelectorAll("#rkCats button").forEach(b => b.classList.toggle("on", b.dataset.cat === RK.cat));
+  $("rkEnabled").checked = cur.enabled;
+  $("rkEnabledText").textContent = label + " sistemi açık";
   $("rkChannel").replaceChildren(el("option", { value: "", text: "Duyuru yok" }), ...RK.channels.map(c => el("option", { value: c.id, text: "#" + c.name })));
-  $("rkChannel").value = RK.channelId;
-  $("rkRole").replaceChildren(el("option", { value: "", text: RK.steps.length ? "Sıradaki rol…" : "Başlangıç rolü…" }),
-    ...ROLES.filter(r => !r.managed && !RK.steps.some(s => s.roleId === r.id)).map(r => el("option", { value: r.id, text: "@" + r.name })));
-  $("rkInv").hidden = RK.steps.length === 0; // ilk rol (başlangıç) için davet gerekmez
-  const move = (i, to) => { const [x] = RK.steps.splice(i, 1); RK.steps.splice(to, 0, x); RK.dirty = true; drawRankup(); };
-  $("rkList").replaceChildren(...RK.steps.map((s, i) => row(
+  $("rkChannel").value = cur.channelId;
+  // Başka kategoride kullanılan roller listelenmez (bir rol tek kategoride olabilir).
+  const taken = new Set(Object.keys(RK_CATS).filter(c => c !== RK.cat).flatMap(c => RK.data[c].steps.map(s => s.roleId)));
+  $("rkRole").replaceChildren(el("option", { value: "", text: cur.steps.length ? "Sıradaki rol…" : "Başlangıç rolü…" }),
+    ...ROLES.filter(r => !r.managed && !taken.has(r.id) && !cur.steps.some(s => s.roleId === r.id)).map(r => el("option", { value: r.id, text: "@" + r.name })));
+  $("rkInv").hidden = cur.steps.length === 0; // ilk rol (başlangıç) için davet gerekmez
+  const touch = () => { RK.dirty[RK.cat] = true; drawRankup(); };
+  const move = (i, to) => { const [x] = cur.steps.splice(i, 1); cur.steps.splice(to, 0, x); touch(); };
+  $("rkList").replaceChildren(...cur.steps.map((s, i) => row(
     (i + 1) + ". @" + roleName(s.roleId),
     i === 0 ? "Başlangıç rolü (davet gerekmez)" : "Bir önceki rolden sonra " + (Number(s.invites) || 1) + " davet · rank alınca sayaç sıfırlanır",
     i > 0 ? el("button", { class: "btn sm alt", type: "button", text: "▲", "aria-label": "Yukarı", onclick: () => move(i, i - 1) }) : null,
-    i < RK.steps.length - 1 ? el("button", { class: "btn sm alt", type: "button", text: "▼", "aria-label": "Aşağı", onclick: () => move(i, i + 1) }) : null,
-    i > 0 ? el("button", { class: "btn sm alt", type: "button", text: "Davet", onclick: () => { const n = Math.floor(Number(prompt("Gereken davet (1-1000):", s.invites || 1))); if (n >= 1 && n <= 1000) { s.invites = n; RK.dirty = true; drawRankup(); } } }) : null,
-    el("button", { class: "btn sm danger", type: "button", text: "Sil", onclick: () => { RK.steps.splice(i, 1); RK.dirty = true; drawRankup(); } }))));
+    i < cur.steps.length - 1 ? el("button", { class: "btn sm alt", type: "button", text: "▼", "aria-label": "Aşağı", onclick: () => move(i, i + 1) }) : null,
+    i > 0 ? el("button", { class: "btn sm alt", type: "button", text: "Davet", onclick: () => { const n = Math.floor(Number(prompt("Gereken davet (1-1000):", s.invites || 1))); if (n >= 1 && n <= 1000) { s.invites = n; touch(); } } }) : null,
+    el("button", { class: "btn sm danger", type: "button", text: "Sil", onclick: () => { cur.steps.splice(i, 1); touch(); } }))));
 }
 function wireRankup() {
-  $("rkEnabled").addEventListener("change", e => { RK.enabled = e.target.checked; RK.dirty = true; });
-  $("rkChannel").addEventListener("change", e => { RK.channelId = e.target.value; RK.dirty = true; });
+  $("rkCats").addEventListener("click", e => { const b = e.target.closest("button[data-cat]"); if (b) { RK.cat = b.dataset.cat; drawRankup(); } });
+  $("rkEnabled").addEventListener("change", e => { rkCur().enabled = e.target.checked; RK.dirty[RK.cat] = true; });
+  $("rkChannel").addEventListener("change", e => { rkCur().channelId = e.target.value; RK.dirty[RK.cat] = true; });
   $("rkForm").addEventListener("submit", e => {
     e.preventDefault();
-    const roleId = $("rkRole").value;
+    const cur = rkCur(), roleId = $("rkRole").value;
     if (!roleId) return toast("Bir rol seç", true);
     let invites = 0;
-    if (RK.steps.length) {
+    if (cur.steps.length) {
       invites = Math.floor(Number($("rkInv").value));
       if (!(invites >= 1 && invites <= 1000)) return toast("Gereken davet 1 ile 1000 arasında olmalı", true);
     }
-    RK.steps.push({ roleId, invites }); RK.dirty = true; $("rkInv").value = ""; drawRankup();
+    cur.steps.push({ roleId, invites }); RK.dirty[RK.cat] = true; $("rkInv").value = ""; drawRankup();
   });
-  $("rkSave").addEventListener("click", e => run(e.target, async () => {
-    await api("rankup/save", { enabled: $("rkEnabled").checked, channelId: $("rkChannel").value, steps: RK.steps.map((s, i) => ({ roleId: s.roleId, invites: i === 0 ? 0 : Math.max(1, Number(s.invites) || 1) })) });
-    RK.dirty = false;
-    await load();
-  }, "Auto rank up kaydedildi"));
+  $("rkSave").addEventListener("click", e => {
+    const cat = RK.cat, cur = rkCur();
+    return run(e.target, async () => {
+      await api("rankup/save", { category: cat, enabled: $("rkEnabled").checked, channelId: $("rkChannel").value, steps: cur.steps.map((s, i) => ({ roleId: s.roleId, invites: i === 0 ? 0 : Math.max(1, Number(s.invites) || 1) })) });
+      RK.dirty[cat] = false;
+      await load();
+    }, RK_CATS[cat] + " auto rank up kaydedildi");
+  });
 }
-
 async function load() { render(await api("overview")); }
 
 function formData(form) { return Object.fromEntries(new FormData(form)); }
