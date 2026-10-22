@@ -23,6 +23,7 @@ const DEFAULT_CONFIG = {
   askPermRoleId: null, // /askperm: kararı verebilecek kurucu rolü
   askPermBotEnabled: true, // bot eklenince izin iste
   askPermRoleEnabled: true, // rol verilince izin iste
+  logChannelId: null, // /setlog: moderasyon log kanalı
   roleBotIds: [], // /setroles: bot rolleri (promote/demote basamağına girmez)
   roleMemberIds: [], // /setroles: üye rolleri = promote/demote basamakları
   roleStaffIds: [], // /setroles: yetkili rolleri (üye rolleriyle birlikte promote/demote basamağı)

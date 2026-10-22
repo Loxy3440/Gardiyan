@@ -2,6 +2,7 @@ const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ActionRowBuilder
 const { errorEmbed, successEmbed, warningEmbed, infoEmbed } = require('../utils/embeds');
 const { parseDuration } = require('../utils/parseDuration');
 const { formatRemaining, pickTickInterval } = require('../utils/formatDuration');
+const { logAction } = require('../utils/modLog');
 const { setActiveTimer, clearActiveTimer } = require('../utils/activeTimers');
 
 const MAX_TIMEOUT_MS = 28 * 24 * 60 * 60 * 1000; // Discord siniri: 28 gun
@@ -70,6 +71,11 @@ module.exports = {
       .setImage(attachment.url)
       .setFooter({ text: `Yetkili: ${interaction.user.tag}` })
       .setTimestamp();
+
+    await logAction(interaction.guild, {
+      action: 'mute', target: member, moderator: interaction.user, reason,
+      fields: [{ name: 'Süre', value: durationInput, inline: true }], imageUrl: attachment.url, fromPanel: interaction.fromPanel,
+    });
 
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder().setCustomId(`unmute_${member.id}`).setLabel('Unmute').setStyle(ButtonStyle.Primary),

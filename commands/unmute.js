@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { errorEmbed, successEmbed, warningEmbed } = require('../utils/embeds');
+const { logAction } = require('../utils/modLog');
 const { clearActiveTimer } = require('../utils/activeTimers');
 
 module.exports = {
@@ -31,6 +32,8 @@ module.exports = {
     }
 
     clearActiveTimer(`mute_${interaction.guild.id}_${member.id}`);
+
+    await logAction(interaction.guild, { action: 'unmute', target: member, moderator: interaction.user, reason, fromPanel: interaction.fromPanel });
 
     const embed = successEmbed('Susturma Kaldırıldı', `**${member.user.tag}** artık tekrar konuşabilir.`)
       .addFields({ name: 'Sebep', value: reason })

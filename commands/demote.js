@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { logAction } = require('../utils/modLog');
 const { errorEmbed, successEmbed, warningEmbed } = require('../utils/embeds');
 const { registerCommandGrant, needsApproval } = require('../utils/askPerm');
 const { getConfig } = require('../utils/guildConfig');
@@ -51,6 +52,15 @@ module.exports = {
     } catch {
       return interaction.reply({ embeds: [errorEmbed('Rol Değiştirilirken bir Hata Oluştu.')], ephemeral: true });
     }
+
+    await logAction(interaction.guild, {
+      action: 'demote', target: member, moderator: interaction.user, fromPanel: interaction.fromPanel,
+      fields: [
+        { name: 'Önceki Rol', value: currentTop.name, inline: true },
+        { name: 'Yeni Rol', value: prevRole.name, inline: true },
+        ...(pending ? [{ name: 'Durum', value: '⏳ Onay bekliyor', inline: true }] : []),
+      ],
+    });
 
     if (pending) {
       return interaction.reply({

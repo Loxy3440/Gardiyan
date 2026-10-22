@@ -32,6 +32,7 @@ const { clearActiveTimer } = require('../utils/activeTimers');
 const { handleEventInteraction } = require('../utils/eventListUI');
 const { handleInviteInteraction } = require('../utils/inviteUI');
 const { handleYtSendInteraction } = require('../utils/ytSendUI');
+const { logAction } = require('../utils/modLog');
 const { handleAskPermInteraction } = require('../utils/askPerm');
 const { handleRoleGroupsInteraction } = require('../utils/roleGroups');
 const { handleTriggerRolesInteraction } = require('../utils/triggerRoles');
@@ -911,6 +912,7 @@ module.exports = {
         return interaction.followUp({ embeds: [errorEmbed('Yasak kaldırilirken bir hata oluştu.')], ephemeral: true });
       }
 
+      logAction(interaction.guild, { action: 'unban', target: banEntry.user, moderator: interaction.user, reason: 'Buton' });
       const disabledRow = disableButtons(interaction, 'Unbanned');
       const embed = successEmbed('Yasak kaldırıldı', `**${banEntry.user.tag}** artık sunucuya tekrar katılabilir.`)
         .setFooter({ text: `İşlemi yapan: ${interaction.user.tag}` })
@@ -939,6 +941,7 @@ module.exports = {
 
       clearActiveTimer(`mute_${interaction.guild.id}_${targetId}`);
 
+      logAction(interaction.guild, { action: 'unmute', target: member, moderator: interaction.user, reason: 'Buton' });
       const disabledRow = disableButtons(interaction, 'Unmuted');
       const embed = successEmbed('Susturma Kaldırıldı', `**${member.user.tag}** artık tekrar konusabilir.`)
         .setFooter({ text: `İşlemi yapan: ${interaction.user.tag}` })

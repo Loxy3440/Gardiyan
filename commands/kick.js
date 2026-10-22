@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
+const { logAction } = require('../utils/modLog');
 const { errorEmbed, successEmbed, warningEmbed } = require('../utils/embeds');
 
 module.exports = {
@@ -57,6 +58,8 @@ module.exports = {
     } catch {
       return interaction.editReply({ embeds: [errorEmbed('Atma işlemi başarısız oldu.')] });
     }
+
+    await logAction(interaction.guild, { action: 'kick', target: member, moderator: interaction.user, reason, imageUrl: attachment.url, fromPanel: interaction.fromPanel });
 
     const resultEmbed = successEmbed('Üye Atıldı', `**${member.user.tag}** sunucudan atıldı.`)
       .addFields(

@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { logAction } = require('../utils/modLog');
 const { errorEmbed, successEmbed, warningEmbed } = require('../utils/embeds');
 
 module.exports = {
@@ -31,6 +32,8 @@ module.exports = {
     } catch {
       return interaction.editReply({ embeds: [errorEmbed('Yasak kaldırma işlemi başarısız oldu.')] });
     }
+
+    await logAction(interaction.guild, { action: 'unban', target: banEntry.user, moderator: interaction.user, reason, fromPanel: interaction.fromPanel });
 
     const embed = successEmbed('Yasak kaldırıldı', `**${banEntry.user.tag}** artik sunucuya tekrar katılabilir.`)
       .addFields({ name: 'Sebep', value: reason })

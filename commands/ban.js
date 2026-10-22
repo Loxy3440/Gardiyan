@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { errorEmbed, successEmbed, warningEmbed } = require('../utils/embeds');
+const { logAction } = require('../utils/modLog');
 const { addBan, searchBanRecord } = require('../utils/bans');
 
 module.exports = {
@@ -78,6 +79,8 @@ async function handleBan(interaction) {
   }
 
   await addBan(interaction.guild.id, member.id, member.user.tag, interaction.user.id, reason, attachment.url).catch(() => {});
+
+  await logAction(interaction.guild, { action: 'ban', target: member, moderator: interaction.user, reason, imageUrl: attachment.url, fromPanel: interaction.fromPanel });
 
   const resultEmbed = successEmbed('Uye Yasaklandi', `**${member.user.tag}** sunucudan yasaklandi.`)
     .setColor(0xed4245)
