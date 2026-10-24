@@ -7,6 +7,7 @@ const DEFAULT_ACTIVITY_CONFIG = {
   list: [], // [{ type: 'PLAYING'|'WATCHING'|'LISTENING'|'COMPETING'|'STREAMING', text: '/help', url?: 'https://twitch.tv/...' }, ...]
   intervalSeconds: 15,
   status: 'online', // 'online' | 'idle' | 'dnd' | 'invisible'
+  customStatus: '', // botun profilindeki durum yazısı (balon); aktivite listesinden bağımsızdır
 };
 
 const STATUSES = ['online', 'idle', 'dnd', 'invisible'];

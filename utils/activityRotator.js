@@ -34,24 +34,34 @@ function renderText(client, text) {
     .replace(/\{(sunucu|guilds)\}/gi, String(client.guilds.cache.size));
 }
 
+let customText = ''; // botun durum yazısı (balon), aktivite listesinden bağımsız
+
+// Botun gerçek presence'ını kurar: önce (varsa) durum yazısı, sonra dönen aktivite.
+function pushPresence(client, entry) {
+  if (!client.user) return;
+  const activities = [];
+  if (customText) activities.push({ name: 'Custom Status', type: 4, state: renderText(client, customText) });
+  if (entry && entry.type !== 'CUSTOM') {
+    const a = { name: renderText(client, entry.text), type: TYPE_MAP[entry.type] ?? 3 };
+    if (entry.type === 'STREAMING' && entry.url) a.url = entry.url; // url yoksa Discord normal "Oynuyor" gibi gosterir
+    activities.push(a);
+  } else if (entry && entry.type === 'CUSTOM' && !customText) {
+    activities.push({ name: 'Custom Status', type: 4, state: renderText(client, entry.text) }); // eski kayıtlar
+  }
+  client.user.setPresence({ activities, status: currentStatus });
+}
+
 function applyOne(client, entry) {
   if (!client.user) return;
   currentEntry = entry;
   currentRendered = { type: entry.type, text: renderText(client, entry.text) };
-  if (entry.type === 'CUSTOM') {
-    client.user.setPresence({ activities: [{ name: 'Custom Status', type: 4, state: renderText(client, entry.text) }], status: currentStatus });
-    return;
-  }
-  const options = { type: TYPE_MAP[entry.type] ?? 3 };
-  if (entry.type === 'STREAMING') {
-    if (entry.url) options.url = entry.url; // url yoksa Discord normal "Oynuyor" gibi gosterir
-  }
-  client.user.setActivity(renderText(client, entry.text), options);
+  pushPresence(client, entry);
 }
 
 // Üye katılıp/ayrılınca ve düzenli aralıkla çağrılır: şu an gösterilen aktiviteyi güncel sayıyla yeniler.
 function refreshActivity(client) {
-  if (currentEntry && /\{(uye|members|sunucu|guilds)\}/i.test(currentEntry.text)) applyOne(client, currentEntry);
+  const re = /\{(uye|members|sunucu|guilds)\}/i;
+  if ((currentEntry && re.test(currentEntry.text)) || re.test(customText)) pushPresence(client, currentEntry);
 }
 
 // Kaydedilen aktivite listesini/suresini okuyup uygular ve gerekirse donguyu (rotation) yeniden baslatir.
@@ -73,6 +83,7 @@ async function startActivityRotation(client) {
   try {
     config = await getActivityConfig();
     currentStatus = config.status || 'online';
+    customText = String(config.customStatus || '').trim();
     client.user.setStatus(currentStatus);
   } catch (err) {
     console.error('[ACTIVITY] Config okunamadi, varsayilan kullaniliyor:', err.message);
@@ -82,7 +93,8 @@ async function startActivityRotation(client) {
 
   if (!config.list.length) {
     currentRendered = { type: 'WATCHING', text: '/help' };
-    client.user.setActivity('/help', { type: 3 }); // varsayilan
+    currentEntry = { type: 'WATCHING', text: '/help' };
+    pushPresence(client, currentEntry); // varsayilan
     return;
   }
 
@@ -114,6 +126,8 @@ function getPresenceView(client) {
   return {
     status: currentStatus,
     activity: currentRendered,
+    customRaw: customText,
+    custom: customText ? renderText(client, customText) : '',
     bot: client.user ? { name: client.user.username, avatar: client.user.displayAvatarURL({ size: 128 }) } : null,
   };
 }

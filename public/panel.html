@@ -11,10 +11,30 @@
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="panel.css">
 </head>
-<body>
-<div class="wrap">
+<body class="pn">
+<div class="shell">
+  <aside class="side" id="side" hidden>
+    <div class="sbrand"><div class="logo">🛡️</div><div><b>Gardiyan</b><small>Yönetim paneli</small></div></div>
+    <nav class="tabs" id="tabs" role="tablist">
+      <span class="grp">Bot</span>
+      <button data-tab="home" class="on"><i>🏠</i>Genel bakış</button>
+      <button data-tab="activity"><i>🎮</i>Aktivite</button>
+      <button data-tab="commands"><i>⌨️</i>Tüm komutlar</button>
+      <span class="grp">Otomasyon</span>
+      <button data-tab="mention"><i>💬</i>Etiket cevapları</button>
+      <button data-tab="auto"><i>🤖</i>Otomatik mesaj</button>
+      <button data-tab="roles"><i>🎭</i>Roller</button>
+      <button data-tab="rankup"><i>📈</i>Auto rank up</button>
+      <button data-tab="durum"><i>🏷️</i>Durum rolü</button>
+      <span class="grp">Sunucu</span>
+      <button data-tab="members"><i>👥</i>Üyeler</button>
+      <button data-tab="stats"><i>🏆</i>İstatistik</button>
+      <button data-tab="log"><i>📜</i>Log</button>
+    </nav>
+  </aside>
+  <div class="main">
   <header>
-    <div class="brand"><div><h1>Yönetim</h1><p><a href="/">← Panele dön</a></p></div></div>
+    <div class="brand"><div><h1 id="pageTitle">Genel bakış</h1><p><a href="/">← Panele dön</a></p></div></div>
     <div id="who" class="who" hidden><img id="whoImg" alt=""><span id="whoName"></span><a href="/auth/logout" class="out">Çıkış</a></div>
   </header>
 
@@ -27,37 +47,48 @@
 
   <!-- Yönetim -->
   <main id="app" hidden>
-    <nav class="tabs" id="tabs" role="tablist">
-      <button data-tab="activity" class="on">Aktivite</button>
-      <button data-tab="mention">Etiket cevapları</button>
-      <button data-tab="auto">Otomatik mesaj</button>
-      <button data-tab="roles">Roller</button>
-      <button data-tab="rankup">Auto rank up</button>
-      <button data-tab="members">Üyeler</button>
-      <button data-tab="stats">İstatistik</button>
-      <button data-tab="durum">Durum rolü</button>
-      <button data-tab="log">Log</button>
-      <button data-tab="commands">Tüm komutlar</button>
-    </nav>
 
-    <section class="pane" id="pane-activity">
-      <div class="box">
-        <h2>Bot durumu</h2>
-        <p class="hint">Botun Discord'da nasıl göründüğünü seç. Değişiklik anında uygulanır ve bot yeniden başlasa da korunur.</p>
-        <div class="bprofile" id="bProfile">
-          <div class="bavwrap"><img id="bAvatar" alt="" width="72" height="72"><span class="sdot" id="bDot"></span></div>
-          <div class="btxt"><div class="bname" id="bName">—</div><div class="bact" id="bAct">—</div></div>
+    <section class="pane" id="pane-home">
+      <div class="stats" id="homeStats">
+        <div class="stat"><span>Üye</span><b id="sMembers">—</b></div>
+        <div class="stat"><span>Sunucu</span><b id="sGuilds">—</b></div>
+        <div class="stat"><span>Ping</span><b id="sPing">—</b></div>
+        <div class="stat"><span>Çalışma süresi</span><b id="sUp">—</b></div>
+        <div class="stat"><span>Komut</span><b id="sCmds">—</b></div>
+      </div>
+      <div class="two">
+        <div class="box">
+          <h2>Bot görünümü</h2>
+          <p class="hint">Botun Discord profilinde böyle görünür. Değişiklikler anında uygulanır ve bot yeniden başlasa da korunur.</p>
+          <div class="dprev" id="bProfile">
+            <div class="dbanner"></div>
+            <div class="dbody">
+              <div class="bubble" id="bBubble" hidden></div>
+              <div class="bavwrap"><img id="bAvatar" alt="" width="84" height="84"><span class="sdot" id="bDot"></span></div>
+              <div class="dname"><span id="bName">—</span><em class="tag">BOT</em></div>
+              <div class="dsub" id="bAct">—</div>
+            </div>
+          </div>
         </div>
-        <div class="statuses" id="statusPick" role="radiogroup" aria-label="Bot durumu">
-          <button type="button" class="st" data-s="online" role="radio"><span class="sdot online"></span><b>Çevrimiçi</b><small>Yeşil, aktif görünür</small></button>
-          <button type="button" class="st" data-s="idle" role="radio"><span class="sdot idle"></span><b>Boşta</b><small>Sarı ay işareti</small></button>
-          <button type="button" class="st" data-s="dnd" role="radio"><span class="sdot dnd"></span><b>Rahatsız etmeyin</b><small>Kırmızı, meşgul</small></button>
-          <button type="button" class="st" data-s="invisible" role="radio"><span class="sdot invisible"></span><b>Görünmez</b><small>Çevrimdışı görünür</small></button>
+        <div class="box">
+          <h2>Durum</h2>
+          <div class="statuses" id="statusPick" role="radiogroup" aria-label="Bot durumu">
+            <button type="button" class="st" data-s="online" role="radio"><span class="sdot online"></span><b>Çevrimiçi</b><small>Yeşil, aktif görünür</small></button>
+            <button type="button" class="st" data-s="idle" role="radio"><span class="sdot idle"></span><b>Boşta</b><small>Sarı ay işareti</small></button>
+            <button type="button" class="st" data-s="dnd" role="radio"><span class="sdot dnd"></span><b>Rahatsız etmeyin</b><small>Kırmızı, meşgul</small></button>
+            <button type="button" class="st" data-s="invisible" role="radio"><span class="sdot invisible"></span><b>Görünmez</b><small>Çevrimdışı görünür</small></button>
+          </div>
+          <h2 style="margin-top:20px">Durum yazısı</h2>
+          <p class="hint">Avatarın üstünde görünen balon yazı (ör. <code>.gg/miyagido</code>). Aktivite listesinden bağımsızdır. <code>{uye}</code> yazarsan üye sayısı gelir. Boş bırakıp kaydedersen kalkar.</p>
+          <form id="bsForm" class="row"><input id="bsText" maxlength="100" placeholder=".gg/miyagido"><button class="btn">Kaydet</button></form>
         </div>
       </div>
+    </section>
+
+    <section class="pane" id="pane-activity" hidden>
       <div class="box">
-        <h2>Durum yazıları</h2>
-        <p class="hint">Bot listedeki yazıları sırayla gösterir. <code>{uye}</code> yazarsan anlık üye sayısı, <code>{sunucu}</code> yazarsan sunucu sayısı gelir. Bu ayar tüm sunucular için geçerlidir.</p>
+        <h2>Aktiviteler</h2>
+        <p class="hint">Bot listedeki aktiviteleri sırayla gösterir (İzliyor, Oynuyor…). <code>{uye}</code> yazarsan anlık üye sayısı, <code>{sunucu}</code> yazarsan sunucu sayısı gelir. Bu ayar tüm sunucular için geçerlidir.</p>
         <ul class="list" id="actList"></ul>
         <form id="actForm" class="row">
           <select name="type" aria-label="Tür">
@@ -66,7 +97,6 @@
             <option value="STREAMING">Yayında</option>
             <option value="LISTENING">Dinliyor</option>
             <option value="COMPETING">Yarışıyor</option>
-            <option value="CUSTOM">Özel durum (sadece yazı)</option>
           </select>
           <input name="text" maxlength="100" placeholder="{uye} üye" required>
           <input name="url" id="actUrl" maxlength="200" type="url" placeholder="https://twitch.tv/kullanici" hidden>
@@ -204,6 +234,7 @@
       <div id="cmdResult"></div>
     </section>
   </main>
+  </div>
 </div>
 <div id="toast" role="status" aria-live="polite"></div>
 <script src="panel.js"></script>

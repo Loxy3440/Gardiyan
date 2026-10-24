@@ -61,6 +61,13 @@ const handlers = {
       guild: { id: guild.id, name: guild.name },
       activity: { list: activity.list, intervalSeconds: activity.intervalSeconds },
       presence: getPresenceView(client),
+      stats: {
+        members: guild.memberCount,
+        guilds: client.guilds.cache.size,
+        ping: Math.round(client.ws.ping),
+        uptime: Math.floor(process.uptime()),
+        commands: client.commands?.size || 0,
+      },
       log: { channelId: config.logChannelId || '', categories: Object.fromEntries(Object.keys(LOG_CATS).map(k => [k, (config.logCategories || {})[k] !== false])), labels: LOG_CATS },
       mentionTriggers: config.mentionTriggers || [],
       autoResponses: config.autoResponses || [],
@@ -120,6 +127,13 @@ const handlers = {
     if (!STATUSES.includes(b.status)) throw new ApiError(400, 'Geçersiz durum.');
     await setActivityConfig({ status: b.status });
     setBotStatus(client, b.status);
+    return { ok: true, presence: getPresenceView(client) };
+  },
+  // Botun profilindeki durum yazısı (balon): aktivite listesinden ayrı tek bir yazı. Boş = kaldır.
+  'POST botstatus': async (client, b) => {
+    const text = str(b.text, 100, 'Durum yazısı', false);
+    await setActivityConfig({ customStatus: text });
+    await startActivityRotation(client);
     return { ok: true, presence: getPresenceView(client) };
   },
   'GET presence': async client => getPresenceView(client),
@@ -299,6 +313,7 @@ const PANEL_LABELS = {
   'activity/add': b => `Aktivite eklendi: ${b.type} — ${b.text}`,
   'activity/remove': b => `Aktivite silindi (sıra ${Number(b.index) + 1})`,
   'activity/interval': b => `Aktivite geçiş süresi: ${b.seconds} sn`,
+  'botstatus': b => (b.text ? `Bot durum yazısı: ${b.text}` : 'Bot durum yazısı kaldırıldı'),
   'status': b => `Bot durumu: ${({ online: 'Çevrimiçi', idle: 'Boşta', dnd: 'Rahatsız etmeyin', invisible: 'Görünmez' })[b.status] || b.status}`,
   'mention/upsert': b => `Etiket cevabı kaydedildi: ${b.trigger}`,
   'mention/remove': b => `Etiket cevabı silindi: ${b.trigger}`,

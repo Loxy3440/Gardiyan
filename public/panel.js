@@ -62,8 +62,15 @@ function row(title, sub, ...actions) {
   return el("li", { class: "item" }, el("div", { class: "txt" }, el("div", { class: "t", text: title }), sub ? el("div", { class: "s", text: sub }) : null), el("div", { class: "acts" }, actions));
 }
 
+const fmtUp = s => { const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60); return d ? d + "g " + h + "sa" : h ? h + "sa " + m + "dk" : m + "dk"; };
+function renderStats(s) {
+  if (!s) return;
+  $("sMembers").textContent = s.members.toLocaleString("tr-TR"); $("sGuilds").textContent = s.guilds;
+  $("sPing").textContent = s.ping > 0 ? s.ping + " ms" : "—"; $("sUp").textContent = fmtUp(s.uptime); $("sCmds").textContent = s.commands;
+}
 function render(d) {
   ROLES = d.roles || [];
+  renderStats(d.stats);
   renderPresence(d.presence);
   renderLogSettings(d);
   Object.values(pickers).forEach(p => p.redraw());
@@ -90,8 +97,10 @@ function renderPresence(p) {
   if (p.bot) { $("bName").textContent = p.bot.name; $("bAvatar").src = p.bot.avatar; }
   $("bDot").className = "sdot " + p.status;
   const a = p.activity;
+  const bub = $("bBubble"); bub.hidden = !p.custom; bub.textContent = p.custom || "";
   const verb = { WATCHING: "İzliyor", PLAYING: "Oynuyor", STREAMING: "Yayında", LISTENING: "Dinliyor", COMPETING: "Yarışıyor", CUSTOM: "Durum:" };
   $("bAct").textContent = a ? (verb[a.type] || "") + " " + a.text : "Aktivite yok";
+  if (document.activeElement !== $("bsText")) $("bsText").value = p.customRaw || "";
   document.querySelectorAll("#statusPick .st").forEach(b => b.setAttribute("aria-checked", String(b.dataset.s === p.status)));
 }
 function wireStatus() {
@@ -229,6 +238,10 @@ function wireDurum() {
   $("stRefresh").addEventListener("click", e => run(e.target, async () => { await loadStats(); return { message: "Yenilendi" }; }));
 }
 
+function wireBotStatus() {
+  $("bsForm").addEventListener("submit", e => { e.preventDefault(); run(e.target.querySelector("button"), async () => { const r = await api("botstatus", { text: $("bsText").value.trim() }); renderPresence(r.presence); }, "Durum yazısı kaydedildi"); });
+}
+
 function wire() {
   pickers.men = rolePicker($("menRoles")); pickers.auto = rolePicker($("autoRoles"));
   pickers.member = rolePicker($("grpMember")); pickers.staff = rolePicker($("grpStaff")); pickers.bot = rolePicker($("grpBot"));
@@ -237,10 +250,11 @@ function wire() {
     await load();
   }, "Roller kaydedildi"));
 
-  wireRankup(); wireStatus(); wireLog(); wireDurum();
+  wireRankup(); wireStatus(); wireLog(); wireDurum(); wireBotStatus();
   $("tabs").addEventListener("click", e => {
     const b = e.target.closest("button[data-tab]"); if (!b) return;
     document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x === b));
+    $("pageTitle").textContent = b.lastChild.textContent.trim();
     document.querySelectorAll(".pane").forEach(p => (p.hidden = p.id !== "pane-" + b.dataset.tab));
     if (b.dataset.tab === "stats") loadStats().catch(err => toast(err.message, true));
     if (b.dataset.tab === "durum") loadDurum().catch(err => toast(err.message, true));
@@ -299,7 +313,7 @@ function memberRow(m) {
     return;
   }
   $("who").hidden = false; $("whoName").textContent = me.user.name; if (me.user.avatar) $("whoImg").src = me.user.avatar; else $("whoImg").hidden = true;
-  $("app").hidden = false;
+  $("app").hidden = false; $("side").hidden = false;
   wire();
   try { await load(); } catch (e) { toast(e.message, true); }
 })();

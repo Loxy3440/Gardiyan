@@ -111,3 +111,73 @@ textarea{resize:vertical}
 .chk input{width:18px;height:18px}
 code{background:var(--panel-2);padding:1px 5px;border-radius:5px;font-size:12px}
 @media (max-width:560px){.rank .item{flex-direction:row;align-items:center;text-align:left}}
+
+/* =========================================================
+   Yeni görünüm: sol menülü dashboard (Discord/BDFD paneli tarzı)
+   ========================================================= */
+body.pn{--bg:#0a0c14;--panel:#10131d;--panel-2:#161a27;--line:#222839;--ink:#eceef6;--mute:#8e96ab;--brass:#7c8cff;--ok:#3ba55d;
+  background-image:radial-gradient(1000px 500px at 85% -10%,#1b2150 0,transparent 65%),radial-gradient(700px 400px at -10% 110%,#1a1236 0,transparent 60%)}
+body.pn a{color:#a9b3ff}
+body.pn .btn{color:#fff;background:linear-gradient(135deg,#6f7fff,#5865f2);box-shadow:0 4px 14px -6px #5865f2}
+body.pn .btn.alt{background:var(--panel-2);color:var(--ink);box-shadow:none}
+body.pn .btn.danger{background:#3a1a1d;color:#ff9b9b;box-shadow:none}
+body.pn code{color:#b9c1ff}
+body.pn input:focus,body.pn select:focus,body.pn textarea:focus{outline-color:#7c8cff}
+body.pn .st[aria-checked=true],body.pn .st:hover,body.pn .chip:hover{border-color:#7c8cff}
+body.pn .st[aria-checked=true]{box-shadow:0 0 0 1px #7c8cff inset}
+body.pn .box{border-radius:16px;background:linear-gradient(180deg,var(--panel),#0e111a)}
+body.pn .box h2{font-size:18px}
+
+.shell{display:grid;grid-template-columns:260px minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:20px 14px;border-right:1px solid var(--line);background:rgba(10,12,20,.7);backdrop-filter:blur(8px)}
+.side[hidden]{display:none}
+.sbrand{display:flex;align-items:center;gap:12px;padding:4px 8px 18px}
+.sbrand .logo{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:22px;background:linear-gradient(135deg,#6f7fff,#5865f2);box-shadow:0 6px 18px -6px #5865f2}
+.sbrand b{display:block;font:800 18px/1.1 "Bricolage Grotesque",sans-serif}
+.sbrand small{color:var(--mute);font-size:12.5px}
+.side .tabs{display:flex;flex-direction:column;gap:2px;overflow:visible;padding:0;margin:0}
+.side .grp{color:var(--mute);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:14px 10px 6px}
+.side .tabs button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:transparent;border:0;border-radius:10px;padding:10px 12px;color:#b4bbd0;font:500 15px "IBM Plex Sans",sans-serif;cursor:pointer;transition:background .15s,color .15s}
+.side .tabs button i{font-style:normal;width:22px;text-align:center;font-size:17px}
+.side .tabs button:hover{background:var(--panel-2);color:#fff}
+.side .tabs button.on{background:linear-gradient(135deg,rgba(111,127,255,.22),rgba(88,101,242,.12));color:#fff;box-shadow:0 0 0 1px rgba(124,140,255,.35) inset}
+.main{padding:0 28px 48px;min-width:0;max-width:1100px;width:100%}
+.main header{padding:24px 0 18px}
+.main header h1{font-size:26px}
+
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:14px}
+.stat{background:linear-gradient(180deg,var(--panel),#0e111a);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.stat span{color:var(--mute);font-size:13px}
+.stat b{font:800 24px/1.2 "Bricolage Grotesque",sans-serif;font-variant-numeric:tabular-nums}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.two .box{margin-bottom:0}
+
+/* Discord profil önizlemesi */
+.dprev{border-radius:16px;overflow:hidden;border:1px solid var(--line);background:#111320}
+.dbanner{height:92px;background:linear-gradient(120deg,#5865f2,#8b5cf6 55%,#ec4899);opacity:.9}
+.dbody{position:relative;padding:0 18px 18px}
+.dbody .bavwrap{margin-top:-42px;display:inline-block}
+.dbody .bavwrap img{width:84px;height:84px;border:6px solid #111320;background:#111320}
+.dbody .bavwrap .sdot{right:0;bottom:2px;width:24px;height:24px;border:5px solid #111320}
+.bubble{position:absolute;left:112px;top:-70px;max-width:calc(100% - 130px);background:#1e2030;color:#e9ecf2;border:1px solid #2c3046;border-radius:14px;padding:6px 12px;font-size:13.5px;box-shadow:0 6px 20px -8px #000;overflow-wrap:anywhere}
+.bubble::after{content:"";position:absolute;left:-10px;bottom:-9px;width:8px;height:8px;border-radius:50%;background:#1e2030;border:1px solid #2c3046}
+.dname{font:700 20px/1.2 "Bricolage Grotesque",sans-serif;margin-top:6px;display:flex;align-items:center;gap:8px}
+.tag{font:600 10.5px "IBM Plex Sans",sans-serif;font-style:normal;background:#5865f2;color:#fff;border-radius:5px;padding:2px 6px;letter-spacing:.04em}
+.dsub{color:var(--mute);font-size:14px;margin-top:4px;overflow-wrap:anywhere}
+
+@media (max-width:980px){.stats{grid-template-columns:repeat(3,1fr)}.two{grid-template-columns:1fr}}
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr}
+  .side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:12px 12px 8px}
+  .sbrand{padding-bottom:10px}
+  .side .tabs{flex-direction:row;overflow-x:auto;gap:6px;padding-bottom:6px;scrollbar-width:none}
+  .side .tabs::-webkit-scrollbar{display:none}
+  .side .grp{display:none}
+  .side .tabs button{flex:none;width:auto;white-space:nowrap;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:8px 14px}
+  .side .tabs button.on{border-color:#7c8cff}
+  .main{padding:0 16px 40px}
+  .main header{padding:16px 0 12px}
+}
+@media (max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}}
+
+@media (max-width:560px){.stat:last-child{grid-column:1/-1}}
