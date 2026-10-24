@@ -206,6 +206,29 @@ async function load() { render(await api("overview")); }
 
 function formData(form) { return Object.fromEntries(new FormData(form)); }
 
+// ---- İstatistik ----
+async function loadStats() {
+  const d = await api("stats");
+  const draw = (id, list) => $(id).replaceChildren(...(list.length ? list.map((r, i) => el("li", { class: "item" },
+    el("div", { class: "txt" }, el("div", { class: "t", text: (["🥇", "🥈", "🥉"][i] || (i + 1) + ".") + " " + r.name })), el("div", { class: "tm", text: r.value }))) : [el("li", { class: "item" }, el("div", { class: "s", text: "Henüz veri yok." }))]));
+  draw("stMsg", d.messages); draw("stVoice", d.voice);
+}
+
+// ---- Durum yazısı rolü ----
+async function loadDurum() {
+  const [d, ov] = await Promise.all([api("durum"), api("overview")]);
+  $("duWarn").hidden = d.presence;
+  $("duOn").checked = Boolean(d.text && d.roleId);
+  $("duText").value = d.text;
+  $("duRole").replaceChildren(el("option", { value: "", text: "Rol seç" }), ...ov.roles.filter(r => !r.managed).map(r => el("option", { value: r.id, text: "@" + r.name })));
+  $("duChannel").replaceChildren(el("option", { value: "", text: "Kanal seç" }), ...ov.channels.map(c => el("option", { value: c.id, text: "#" + c.name })));
+  $("duRole").value = d.roleId; $("duChannel").value = d.channelId;
+}
+function wireDurum() {
+  $("duSave").addEventListener("click", e => run(e.target, async () => api("durum/save", { enabled: $("duOn").checked, text: $("duText").value, roleId: $("duRole").value, channelId: $("duChannel").value })));
+  $("stRefresh").addEventListener("click", e => run(e.target, async () => { await loadStats(); return { message: "Yenilendi" }; }));
+}
+
 function wire() {
   pickers.men = rolePicker($("menRoles")); pickers.auto = rolePicker($("autoRoles"));
   pickers.member = rolePicker($("grpMember")); pickers.staff = rolePicker($("grpStaff")); pickers.bot = rolePicker($("grpBot"));
@@ -214,11 +237,13 @@ function wire() {
     await load();
   }, "Roller kaydedildi"));
 
-  wireRankup(); wireStatus(); wireLog();
+  wireRankup(); wireStatus(); wireLog(); wireDurum();
   $("tabs").addEventListener("click", e => {
     const b = e.target.closest("button[data-tab]"); if (!b) return;
     document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x === b));
     document.querySelectorAll(".pane").forEach(p => (p.hidden = p.id !== "pane-" + b.dataset.tab));
+    if (b.dataset.tab === "stats") loadStats().catch(err => toast(err.message, true));
+    if (b.dataset.tab === "durum") loadDurum().catch(err => toast(err.message, true));
     if (b.dataset.tab === "log") loadLogs().catch(err => toast(err.message, true));
   });
 

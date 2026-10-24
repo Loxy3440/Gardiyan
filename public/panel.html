@@ -34,6 +34,8 @@
       <button data-tab="roles">Roller</button>
       <button data-tab="rankup">Auto rank up</button>
       <button data-tab="members">Üyeler</button>
+      <button data-tab="stats">İstatistik</button>
+      <button data-tab="durum">Durum rolü</button>
       <button data-tab="log">Log</button>
       <button data-tab="commands">Tüm komutlar</button>
     </nav>
@@ -145,6 +147,33 @@
         <p class="hint">Üyeyi ara, sonra sustur, susturmayı kaldır ya da at. İşlemler denetim kaydına "Panel" olarak yazılır.</p>
         <form id="searchForm" class="row"><input id="q" minlength="2" placeholder="Üye adı (en az 2 harf)" required><button class="btn">Ara</button></form>
         <ul class="list" id="memList"></ul>
+      </div>
+    </section>
+
+    <section class="pane" id="pane-stats" hidden>
+      <div class="box">
+        <h2>Mesaj sıralaması</h2>
+        <p class="hint">Tüm sunucu, bot açıldığından beri. Discord'da <code>/mesajtop</code> ile de görünür.</p>
+        <ol class="list rank" id="stMsg"></ol>
+      </div>
+      <div class="box">
+        <h2>Ses sıralaması</h2>
+        <p class="hint">Ses kanallarında geçirilen toplam süre (AFK kanalı sayılmaz). <code>/sestop</code></p>
+        <ol class="list rank" id="stVoice"></ol>
+        <div class="row"><button class="btn alt" id="stRefresh" type="button">Yenile</button></div>
+      </div>
+    </section>
+
+    <section class="pane" id="pane-durum" hidden>
+      <div class="box">
+        <h2>Durum yazısı rolü</h2>
+        <p class="hint">Özel durumunda ayarladığın yazıyı yazan üyeye rol verilir, kanalda etiketlenip mesaj silinir. Yazıyı kaldırınca rol geri alınır. Discord'da <code>/setdurum</code> ile aynı.</p>
+        <p class="hint" id="duWarn" hidden>⚠️ Presence intent kapalı. Render'a <code>USE_PRESENCE=true</code> ekle ve Developer Portal'da Presence Intent'i aç.</p>
+        <label class="chk"><input type="checkbox" id="duOn"> Sistem açık</label>
+        <div class="fld"><label>Durumda geçmesi gereken yazı</label><input id="duText" maxlength="100" placeholder=".gg/mygd"></div>
+        <div class="fld"><label>Verilecek rol</label><select id="duRole"></select></div>
+        <div class="fld"><label>Etiketleme kanalı</label><select id="duChannel"></select></div>
+        <div class="row"><button class="btn" id="duSave" type="button">Kaydet</button></div>
       </div>
     </section>
 

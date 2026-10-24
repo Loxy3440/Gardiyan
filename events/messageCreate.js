@@ -1,3 +1,4 @@
+const { onMessage } = require('../utils/stats');
 const { getConfig, canUseTrigger } = require('../utils/guildConfig');
 const { getActiveEvent, isWinningMessage, claimWinner, applyPlaceholders } = require('../utils/events');
 
@@ -13,6 +14,7 @@ module.exports = {
   async execute(message) {
     try {
       if (message.author.bot || !message.guild) return;
+      onMessage(message); // /mesajtop sayacı
 
       // ---------- /setevent: aktif eventte kelimeyi ilk yazan kazanir ----------
       const activeEvent = getActiveEvent(message.channel.id);

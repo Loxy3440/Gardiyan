@@ -104,3 +104,10 @@ textarea{resize:vertical}
 .logl .item{align-items:flex-start}
 .logl .tm{color:var(--mute);font-size:12px;white-space:nowrap}
 .logl .s{white-space:pre-wrap}
+
+.rank .item{align-items:center}
+.rank .tm{color:var(--mute);font-size:14px;white-space:nowrap}
+.chk{display:flex;align-items:center;gap:10px;margin:6px 0 12px;font-size:14px}
+.chk input{width:18px;height:18px}
+code{background:var(--panel-2);padding:1px 5px;border-radius:5px;font-size:12px}
+@media (max-width:560px){.rank .item{flex-direction:row;align-items:center;text-align:left}}

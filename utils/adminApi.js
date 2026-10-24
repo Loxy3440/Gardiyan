@@ -7,6 +7,8 @@ const { parseDuration } = require('./parseDuration');
 const { clearActiveTimer } = require('./activeTimers');
 const { STATS_GUILD_ID } = require('./activityRotator');
 const runner = require('./commandRunner');
+const { getTop, formatVoice } = require('./stats');
+const { presenceEnabled } = require('./statusRole');
 const { getAllSettings: getRankupAll, getSettings: getRankupSettings, saveSettings: saveRankupSettings, validateSteps, RankupError, CATEGORIES } = require('./autoRankup');
 
 const TYPES = ['PLAYING', 'STREAMING', 'WATCHING', 'LISTENING', 'COMPETING'];
@@ -145,6 +147,46 @@ const handlers = {
     return { ok: true };
   },
 
+  // ---- istatistik (/mesajtop, /sestop) ----
+  'GET stats': async client => {
+    const guild = getGuild(client);
+    const name = async id => {
+      const m = guild.members.cache.get(id) || (await guild.members.fetch(id).catch(() => null));
+      return m ? m.displayName : id;
+    };
+    const build = async which => Promise.all((await getTop(guild.id, which, 15)).map(async r => ({
+      userId: r.userId, name: await name(r.userId),
+      value: which === 'voice' ? formatVoice(r.value) : r.value.toLocaleString('tr-TR') + ' mesaj',
+    })));
+    return { messages: await build('messages'), voice: await build('voice') };
+  },
+
+  // ---- durum rolü (/setdurum) ----
+  'GET durum': async client => {
+    const guild = getGuild(client);
+    const c = await getConfig(guild.id);
+    return { text: c.statusText || '', roleId: c.statusRoleId || '', channelId: c.statusChannelId || '', presence: presenceEnabled(client) };
+  },
+  'POST durum/save': async (client, b) => {
+    const guild = getGuild(client);
+    if (!b.enabled) {
+      await setConfig(guild.id, { statusText: null, statusRoleId: null, statusChannelId: null });
+      return { ok: true, message: 'Durum rolü kapatıldı.' };
+    }
+    const text = str(b.text, 100, 'Durum yazısı');
+    const role = guild.roles.cache.get(String(b.roleId || ''));
+    if (!role || role.id === guild.id) throw new ApiError(400, 'Rol seç.');
+    if (role.managed) throw new ApiError(400, 'Bot/entegrasyon rolü verilemez.');
+    if (role.permissions.has(PermissionFlagsBits.Administrator)) throw new ApiError(400, 'Yönetici yetkisi olan rol seçilemez.');
+    const me = guild.members.me;
+    if (!me.permissions.has(PermissionFlagsBits.ManageRoles) || role.position >= me.roles.highest.position) throw new ApiError(400, 'Bu rolü veremem: botun rolü bu rolün üstünde olmalı.');
+    const ch = guild.channels.cache.get(String(b.channelId || ''));
+    if (!ch || !ch.isTextBased?.()) throw new ApiError(400, 'Kanal seç.');
+    if (!ch.permissionsFor(me)?.has([PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ManageMessages])) throw new ApiError(400, 'Botun bu kanalda Kanalı Gör, Mesaj Gönder ve Mesajları Yönet yetkisi olmalı.');
+    await setConfig(guild.id, { statusText: text, statusRoleId: role.id, statusChannelId: ch.id });
+    return { ok: true, message: presenceEnabled(client) ? 'Kaydedildi.' : 'Kaydedildi, ama Presence intent kapalı (USE_PRESENCE=true + Portal).' };
+  },
+
   // ---- etiketlenme cevapları (/setmention) ----
   'POST mention/upsert': async (client, b) => {
     const guild = getGuild(client);
@@ -265,6 +307,7 @@ const PANEL_LABELS = {
   'roles/save': () => 'Rol grupları (üye/yetkili/bot) güncellendi',
   'rankup/save': b => `Auto rank up (${b.category}) ayarları güncellendi — ${b.enabled ? 'açık' : 'kapalı'}`,
   'log/save': () => 'Log ayarları güncellendi',
+  'durum/save': b => (b.enabled ? `Durum rolü ayarlandı: "${b.text}"` : 'Durum rolü kapatıldı'),
 };
 function panelLog(client, route, body, actor) {
   const make = PANEL_LABELS[route];

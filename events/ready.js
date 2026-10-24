@@ -7,6 +7,7 @@ const { startActivityRotation } = require('../utils/activityRotator');
 const { loadActiveEvents, runDueEvents } = require('../utils/events');
 const { cacheGuildInvites } = require('../utils/inviteTracker');
 const { startTagSweep } = require('../utils/tagRole');
+const { startStats } = require('../utils/stats');
 const { startStatusSweep } = require('../utils/statusRole');
 const { startCountSweep } = require('../utils/countChannel');
 
@@ -19,6 +20,7 @@ module.exports = {
     await startActivityRotation(client);
     startTagSweep(client);
     startStatusSweep(client);
+    startStats(client);
     startCountSweep(client);
 
     // /vcc ile ayarlanmis ses kanali varsa, her sunucuda bota otomatik baglan (mikrofon+kulaklik kapali).

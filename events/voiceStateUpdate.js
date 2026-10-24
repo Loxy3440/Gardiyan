@@ -1,10 +1,12 @@
 const { logAction } = require('../utils/modLog');
+const { onVoice } = require('../utils/stats');
 
 // Ses kanalı giriş / çıkış / geçiş. Sadece kanal değişimi loglanır (mikrofon kapatma vb. değil).
 module.exports = {
   name: 'voiceStateUpdate',
   once: false,
   async execute(oldState, newState) {
+    try { onVoice(oldState, newState); } catch (err) { console.error('[STATS]', err.message); }
     try {
       const member = newState.member || oldState.member;
       if (!member || member.user.bot) return;
