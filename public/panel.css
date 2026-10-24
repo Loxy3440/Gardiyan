@@ -181,3 +181,46 @@ body.pn .box h2{font-size:18px}
 @media (max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}}
 
 @media (max-width:560px){.stat:last-child{grid-column:1/-1}}
+
+/* ---- Mor gece teması: yönetim paneli ---- */
+body.pn{--bg:#0b0713;--panel:#13101c;--panel-2:#1b1526;--line:rgba(198,174,236,.13);--ink:#f6f1ff;--mute:#a69ab8;--brass:#b58cff;--ok:#55e3ae;--bad:#fb7185;
+  color:var(--ink);background-color:var(--bg);
+  background-image:radial-gradient(950px 500px at 84% -12%,rgba(112,64,180,.24),transparent 68%),radial-gradient(650px 420px at -12% 72%,rgba(84,39,142,.16),transparent 70%)}
+body.pn a{color:#c9aaff}
+body.pn .btn{color:#fff;background:linear-gradient(135deg,#8e5cdb,#7044bd);border:1px solid rgba(204,174,255,.17);box-shadow:0 7px 22px -8px rgba(125,78,203,.72);transition:transform .18s,filter .18s}
+body.pn .btn:hover{transform:translateY(-1px);filter:brightness(1.08)}
+body.pn .btn.alt{background:#1a1525;color:var(--ink);border:1px solid var(--line);box-shadow:none}
+body.pn .btn.danger{background:#351a29;color:#ff9eae;border-color:rgba(251,113,133,.24);box-shadow:none}
+body.pn code{color:#d4b8ff;background:#21182e;border-color:rgba(198,174,236,.14)}
+body.pn input:focus,body.pn select:focus,body.pn textarea:focus{outline-color:#b58cff;box-shadow:0 0 0 3px rgba(181,140,255,.12)}
+body.pn .box{border-radius:18px;background:linear-gradient(155deg,rgba(23,18,33,.98),rgba(17,13,24,.98));border-color:var(--line);box-shadow:0 12px 34px rgba(0,0,0,.14)}
+body.pn .box h2{font-size:19px;letter-spacing:-.015em}
+body.pn .side{background:rgba(13,9,20,.82);border-color:var(--line);backdrop-filter:blur(16px)}
+body.pn .sbrand .logo{background:linear-gradient(145deg,#9867e8,#713ebc);box-shadow:0 7px 22px -5px rgba(131,78,204,.76)}
+body.pn .side .grp{color:#897b99;letter-spacing:.12em}
+body.pn .side .tabs button{color:#b9adc8;transition:background .18s,color .18s,box-shadow .18s}
+body.pn .side .tabs button:hover{background:rgba(171,129,230,.1);color:#fff}
+body.pn .side .tabs button.on{background:linear-gradient(100deg,rgba(153,105,226,.23),rgba(119,69,184,.1));color:#f7efff;box-shadow:inset 2px 0 #bd97ff,inset 0 0 0 1px rgba(183,139,255,.16)}
+body.pn .tabs button.on{background:linear-gradient(135deg,#8e5cdb,#7044bd);color:#fff;border-color:transparent;box-shadow:0 6px 18px -8px rgba(125,78,203,.7)}
+body.pn .tabs button{transition:all .18s}
+body.pn .main{max-width:1260px}
+body.pn .main header{border-bottom:1px solid rgba(196,163,233,.08);margin-bottom:16px}
+body.pn .main header h1{letter-spacing:-.025em}
+body.pn .stats{gap:13px}
+body.pn .stat{border-color:var(--line);border-radius:16px;background:linear-gradient(150deg,rgba(25,19,37,.96),rgba(17,13,25,.96));box-shadow:0 9px 25px rgba(0,0,0,.12)}
+body.pn .stat span{color:#a99db8}
+body.pn .stat b{color:#f3ecff}
+body.pn .item,body.pn .chip,body.pn .st,body.pn .catgrid label{background:rgba(28,21,39,.88);border-color:var(--line);transition:border-color .17s,background .17s,transform .17s}
+body.pn .item:hover,body.pn .chip:hover,body.pn .catgrid label:hover{border-color:rgba(191,153,244,.34)}
+body.pn .st[aria-checked=true],body.pn .st:hover,body.pn .chip:hover{border-color:#b58cff}
+body.pn .st[aria-checked=true]{background:rgba(128,79,191,.17);box-shadow:0 0 0 1px rgba(181,140,255,.2) inset}
+body.pn .dprev{border-color:var(--line);background:#15101f;box-shadow:0 12px 30px rgba(0,0,0,.15)}
+body.pn .dbanner{background:linear-gradient(115deg,#7141b3,#a05bd0 54%,#d477aa)}
+body.pn .tag{background:#7847bc}
+body.pn .dname{letter-spacing:-.015em}
+body.pn .note{background:rgba(113,82,35,.2);border-color:rgba(214,174,92,.24);color:#e9d59e}
+body.pn .note.bad{background:rgba(120,37,54,.16);border-color:rgba(251,113,133,.25);color:#ffacb7}
+body.pn #toast{background:#21182e;border-color:rgba(198,174,236,.19);box-shadow:0 12px 38px rgba(0,0,0,.35)}
+body.pn #toast.err{border-color:rgba(251,113,133,.35);color:#ffacb7}
+body.pn .rank .item{background:rgba(28,21,39,.88)}
+@media(max-width:900px){body.pn .side .tabs button{background:rgba(28,21,39,.84);border:1px solid var(--line)}body.pn .side .tabs button.on{border-color:rgba(181,140,255,.42)}}
