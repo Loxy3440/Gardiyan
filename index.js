@@ -4,6 +4,9 @@ const { Client, GatewayIntentBits, Collection, Partials } = require('discord.js'
 require('dotenv').config();
 const { connectDB } = require('./utils/db');
 
+// Presence (durum) intent'i ayrıcalıklıdır: Developer Portal'dan açmadan eklenirse bot giriş yapamaz. Bu yüzden .env USE_PRESENCE=true ile isteğe bağlı.
+const usePresence = String(process.env.USE_PRESENCE || '').toLowerCase() === 'true';
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -13,6 +16,7 @@ const client = new Client({
     GatewayIntentBits.GuildModeration,
     GatewayIntentBits.GuildVoiceStates,
     GatewayIntentBits.GuildInvites,
+    ...(usePresence ? [GatewayIntentBits.GuildPresences] : []),
   ],
   partials: [Partials.Channel, Partials.Message],
 });

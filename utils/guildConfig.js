@@ -32,6 +32,9 @@ const DEFAULT_CONFIG = {
   countFormat: 'Üye Sayısı: {sayi}', // /ckanal: kanal adı şablonu
   autoRankup: { enabled: false, channelId: null, enabledAt: null, steps: [] }, // /autorankup: [{ roleId, invites }] - ilk rol başlangıç, sonrakiler "bir önceki rolden sonra" gereken davet
   tagRoleId: null, // /settag: sunucu etiketini takana verilecek rol
+  statusRoleId: null, // /setdurum: durum yazısını yazana verilecek rol
+  statusChannelId: null, // /setdurum: rol verilince etiketlenip silinecek kanal
+  statusText: null, // /setdurum: özel durumda aranan yazı
   tagChannelId: null, // /settag: rol verilince üyenin etiketlenip mesajın silineceği kanal
 };
 
