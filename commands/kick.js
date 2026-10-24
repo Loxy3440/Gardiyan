@@ -59,7 +59,7 @@ module.exports = {
       return interaction.editReply({ embeds: [errorEmbed('Atma işlemi başarısız oldu.')] });
     }
 
-    await logAction(interaction.guild, { action: 'kick', target: member, moderator: interaction.user, reason, imageUrl: attachment.url, fromPanel: interaction.fromPanel });
+    await logAction(interaction.guild, { action: 'kick', markKey: `kick:${interaction.guild.id}:${member.id}`, target: member, moderator: interaction.user, reason, imageUrl: attachment.url, fromPanel: interaction.fromPanel });
 
     const resultEmbed = successEmbed('Üye Atıldı', `**${member.user.tag}** sunucudan atıldı.`)
       .addFields(

@@ -64,6 +64,8 @@ function row(title, sub, ...actions) {
 
 function render(d) {
   ROLES = d.roles || [];
+  renderPresence(d.presence);
+  renderLogSettings(d);
   Object.values(pickers).forEach(p => p.redraw());
   if (pickers.member && !groupsLoaded) { groupsLoaded = true; pickers.member.set(d.roleGroups.member); pickers.staff.set(d.roleGroups.staff); pickers.bot.set(d.roleGroups.bot); }
   $("intVal").value = d.activity.intervalSeconds;
@@ -80,6 +82,64 @@ function render(d) {
   $("menList").replaceChildren(...mk(d.mentionTriggers, "mention/remove", r => fillForm($("menForm"), r, pickers.men)));
   $("autoList").replaceChildren(...mk(d.autoResponses, "auto/remove", r => fillForm($("autoForm"), r, pickers.auto)));
   renderRankup(d);
+}
+
+// ---- Bot durumu ----
+function renderPresence(p) {
+  if (!p) return;
+  if (p.bot) { $("bName").textContent = p.bot.name; $("bAvatar").src = p.bot.avatar; }
+  $("bDot").className = "sdot " + p.status;
+  const a = p.activity;
+  const verb = { WATCHING: "İzliyor", PLAYING: "Oynuyor", STREAMING: "Yayında", LISTENING: "Dinliyor", COMPETING: "Yarışıyor" };
+  $("bAct").textContent = a ? (verb[a.type] || "") + " " + a.text : "Aktivite yok";
+  document.querySelectorAll("#statusPick .st").forEach(b => b.setAttribute("aria-checked", String(b.dataset.s === p.status)));
+}
+function wireStatus() {
+  $("statusPick").addEventListener("click", async e => {
+    const b = e.target.closest(".st"); if (!b || b.getAttribute("aria-checked") === "true") return;
+    const all = document.querySelectorAll("#statusPick .st"); all.forEach(x => (x.disabled = true));
+    try { const r = await api("status", { status: b.dataset.s }); renderPresence(r.presence); toast("Bot durumu değişti"); }
+    catch (err) { toast(err.message, true); }
+    finally { all.forEach(x => (x.disabled = false)); }
+  });
+}
+
+// ---- Log ----
+const LOGCAT = {};
+let logSettingsDirty = false;
+function renderLogSettings(d) {
+  if (!d.log) return;
+  Object.assign(LOGCAT, d.log.labels);
+  if (!logSettingsDirty) {
+    $("logChannel").replaceChildren(el("option", { value: "", text: "Log kapalı (sadece geçmiş tutulur)" }), ...(d.channels || []).map(c => el("option", { value: c.id, text: "#" + c.name })));
+    $("logChannel").value = d.log.channelId || "";
+    $("logCats").replaceChildren(...Object.entries(d.log.labels).map(([k, label]) => {
+      const cb = el("input", { type: "checkbox", "data-k": k }); cb.checked = !!d.log.categories[k]; if (k === "mod") { cb.checked = true; cb.disabled = true; }
+      return el("label", {}, cb, el("span", { text: label }));
+    }));
+    const f = $("logFilter"); const cur = f.value;
+    f.replaceChildren(el("option", { value: "", text: "Tüm kategoriler" }), ...Object.entries(d.log.labels).map(([k, l]) => el("option", { value: k, text: l.split(" (")[0] })));
+    f.value = cur;
+  }
+}
+const fmtTime = iso => new Date(iso).toLocaleString("tr-TR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+async function loadLogs() {
+  const cat = $("logFilter").value;
+  const { entries } = await api("log" + (cat ? "?cat=" + encodeURIComponent(cat) : ""));
+  $("logList").replaceChildren(...entries.map(e => el("li", { class: "item" },
+    el("div", { class: "txt" }, el("div", { class: "t", text: e.title }), el("div", { class: "s", text: e.text })),
+    el("div", { class: "tm", text: fmtTime(e.at) }))));
+}
+function wireLog() {
+  $("logCats").addEventListener("change", () => (logSettingsDirty = true));
+  $("logChannel").addEventListener("change", () => (logSettingsDirty = true));
+  $("logSave").addEventListener("click", e => run(e.target, async () => {
+    const categories = Object.fromEntries([...document.querySelectorAll("#logCats input")].map(i => [i.dataset.k, i.checked]));
+    await api("log/save", { channelId: $("logChannel").value, categories });
+    logSettingsDirty = false; await load();
+  }, "Log ayarları kaydedildi"));
+  $("logRefresh").addEventListener("click", e => run(e.target, async () => { await loadLogs(); return { message: "Yenilendi" }; }));
+  $("logFilter").addEventListener("change", () => loadLogs().catch(err => toast(err.message, true)));
 }
 
 // ---- Auto rank up (iki kategori: üye / yetkili) ----
@@ -111,9 +171,10 @@ function drawRankup() {
   const move = (i, to) => { const [x] = cur.steps.splice(i, 1); cur.steps.splice(to, 0, x); touch(); };
   $("rkList").replaceChildren(...cur.steps.map((s, i) => row(
     (i + 1) + ". @" + roleName(s.roleId),
-    i === 0 ? "Başlangıç rolü (davet gerekmez)" : "Bir önceki rolden sonra " + (Number(s.invites) || 1) + " davet · rank alınca sayaç sıfırlanır",
+    i === 0 ? "Başlangıç rolü (davet gerekmez)" : "Bir önceki rolden sonra " + (Number(s.invites) || 1) + " davet" + (Number(s.partners) > 0 ? " veya " + Number(s.partners) + " partner" : "") + " · rank alınca sayaç sıfırlanır",
     i > 0 ? el("button", { class: "btn sm alt", type: "button", text: "▲", "aria-label": "Yukarı", onclick: () => move(i, i - 1) }) : null,
     i < cur.steps.length - 1 ? el("button", { class: "btn sm alt", type: "button", text: "▼", "aria-label": "Aşağı", onclick: () => move(i, i + 1) }) : null,
+    i > 0 ? el("button", { class: "btn sm alt", type: "button", text: "Partner", onclick: () => { const n = Math.floor(Number(prompt("Gereken partner (0 = partner ile terfi kapalı, 1000 max):", s.partners || 0))); if (n >= 0 && n <= 1000) { s.partners = n; touch(); } } }) : null,
     i > 0 ? el("button", { class: "btn sm alt", type: "button", text: "Davet", onclick: () => { const n = Math.floor(Number(prompt("Gereken davet (1-1000):", s.invites || 1))); if (n >= 1 && n <= 1000) { s.invites = n; touch(); } } }) : null,
     el("button", { class: "btn sm danger", type: "button", text: "Sil", onclick: () => { cur.steps.splice(i, 1); touch(); } }))));
 }
@@ -130,12 +191,12 @@ function wireRankup() {
       invites = Math.floor(Number($("rkInv").value));
       if (!(invites >= 1 && invites <= 1000)) return toast("Gereken davet 1 ile 1000 arasında olmalı", true);
     }
-    cur.steps.push({ roleId, invites }); RK.dirty[RK.cat] = true; $("rkInv").value = ""; drawRankup();
+    cur.steps.push({ roleId, invites, partners: 0 }); RK.dirty[RK.cat] = true; $("rkInv").value = ""; drawRankup();
   });
   $("rkSave").addEventListener("click", e => {
     const cat = RK.cat, cur = rkCur();
     return run(e.target, async () => {
-      await api("rankup/save", { category: cat, enabled: $("rkEnabled").checked, channelId: $("rkChannel").value, steps: cur.steps.map((s, i) => ({ roleId: s.roleId, invites: i === 0 ? 0 : Math.max(1, Number(s.invites) || 1) })) });
+      await api("rankup/save", { category: cat, enabled: $("rkEnabled").checked, channelId: $("rkChannel").value, steps: cur.steps.map((s, i) => ({ roleId: s.roleId, invites: i === 0 ? 0 : Math.max(1, Number(s.invites) || 1), partners: i === 0 ? 0 : Math.max(0, Number(s.partners) || 0) })) });
       RK.dirty[cat] = false;
       await load();
     }, RK_CATS[cat] + " auto rank up kaydedildi");
@@ -153,11 +214,12 @@ function wire() {
     await load();
   }, "Roller kaydedildi"));
 
-  wireRankup();
+  wireRankup(); wireStatus(); wireLog();
   $("tabs").addEventListener("click", e => {
     const b = e.target.closest("button[data-tab]"); if (!b) return;
     document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x === b));
     document.querySelectorAll(".pane").forEach(p => (p.hidden = p.id !== "pane-" + b.dataset.tab));
+    if (b.dataset.tab === "log") loadLogs().catch(err => toast(err.message, true));
   });
 
   const submit = (id, path, tweak, after) => $(id).addEventListener("submit", async e => {

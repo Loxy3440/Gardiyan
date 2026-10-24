@@ -4,6 +4,7 @@ const { PanelError, resolveOptions, makeInteraction, T } = require('./fakeIntera
 const { STATS_GUILD_ID } = require('./activityRotator');
 
 // Panelden çalıştırılmayacaklar ve ayrı sekmesi olanlar.
+const { logCommand } = require('./modLog');
 const BLOCKED = { close: 'Botu kapatır; kapanınca panel de kapanır. Sadece Discord içinden, onay düğmesiyle kullan.' };
 const HAS_TAB = { setactivity: 'activity', setmention: 'mention', auto: 'auto' };
 // Komutun kodu "komutun yazıldığı kanalı" kullanıyorsa kanal seçmek zorunlu (yanlış kanalda işlem olmasın).
@@ -71,7 +72,10 @@ async function startRun(client, actor, body) {
   const interaction = makeInteraction({ client, guild, member, channel, command, subName, options, outputs });
   const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Komut 10 dakikada bitmedi.')), 10 * 60 * 1000));
   Promise.race([command.execute(interaction), timeout])
-    .then(() => { job.status = 'done'; if (!outputs.length) outputs.push({ content: 'Komut çalıştı (çıktı yok).', embeds: [], hasComponents: false, files: 0 }); })
+    
+    .then(() => { job.status = 'done';
+      const optText = Object.entries(options).map(([k, o]) => `${k}: ${o.user ? '<@' + o.user.id + '>' : o.role ? '<@&' + o.role.id + '>' : o.channel ? '<#' + o.channel.id + '>' : o.attachment ? '[dosya]' : String(o.value).slice(0, 80)}`).join(' · ');
+      logCommand(guild, { name: command.data.name, user: actor.id === member.id ? member.user : { id: actor.id, tag: actor.name }, optionsText: [subName, optText].filter(Boolean).join(' · '), fromPanel: true }); if (!outputs.length) outputs.push({ content: 'Komut çalıştı (çıktı yok).', embeds: [], hasComponents: false, files: 0 }); })
     .catch(err => {
       job.status = 'error';
       job.error = err instanceof PanelError ? err.message : 'Komut hata verdi: ' + (err.message || err);

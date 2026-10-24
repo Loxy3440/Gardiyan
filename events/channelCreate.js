@@ -1,3 +1,4 @@
+const { logAction } = require('../utils/modLog');
 const { getConfig } = require('../utils/guildConfig');
 
 module.exports = {
@@ -5,6 +6,7 @@ module.exports = {
   once: false,
   async execute(channel) {
     try {
+      if (channel.guild) logAction(channel.guild, { action: 'chcreate', fields: [{ name: 'Kanal', value: `<#${channel.id}> (#${channel.name})`, inline: true }] });
       if (!channel.guild || !channel.parentId) return;
       if (!channel.isTextBased || !channel.isTextBased()) return;
 

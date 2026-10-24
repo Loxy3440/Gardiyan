@@ -33,7 +33,17 @@ module.exports = {
         .addStringOption(catOption(true))
         .addRoleOption(opt => opt.setName('rol').setDescription('Eklenecek rol').setRequired(true))
         .addIntegerOption(opt =>
-          opt.setName('invite').setDescription('Bir önceki rolden sonra bu role geçmek için gereken davet (ilk rol için boş bırak)').setMinValue(1).setMaxValue(MAX_INVITES)),
+          opt.setName('invite').setDescription('Bir önceki rolden sonra bu role geçmek için gereken davet (ilk rol için boş bırak)').setMinValue(1).setMaxValue(MAX_INVITES))
+        .addIntegerOption(opt =>
+          opt.setName('partner').setDescription('İsteğe bağlı: davet yerine bu kadar onaylı partner de terfi ettirir').setMinValue(1).setMaxValue(MAX_INVITES)),
+    )
+    .addSubcommand(sub =>
+      sub
+        .setName('partner')
+        .setDescription('Bir basamak için gereken partner sayısını ayarlar (0 = partner ile terfi kapalı)')
+        .addStringOption(catOption(true))
+        .addRoleOption(opt => opt.setName('rol').setDescription('Basamaktaki rol (ilk rol hariç)').setRequired(true))
+        .addIntegerOption(opt => opt.setName('sayi').setDescription('Gereken partner sayısı (0 = kapalı)').setMinValue(0).setMaxValue(MAX_INVITES).setRequired(true)),
     )
     .addSubcommand(sub =>
       sub
@@ -90,13 +100,25 @@ module.exports = {
         if (settings.steps.length && invites == null) {
           return fail(`${label} listesinde zaten rol var: bu role geçmek için kaç davet gerektiğini \`invite\` ile yaz.`);
         }
-        const steps = validateSteps(guild, [...settings.steps, { roleId: role.id, invites: invites ?? 0 }], chosen, config);
+        const steps = validateSteps(guild, [...settings.steps, { roleId: role.id, invites: invites ?? 0, partners: interaction.options.getInteger('partner') ?? 0 }], chosen, config);
         await saveSettings(guild.id, chosen, { ...settings, steps });
 
         const tooHigh = me && role.position >= me.roles.highest.position;
         const embed = successEmbed(`${label}: Basamak Eklendi`, ladderText(guild, steps));
         if (tooHigh) embed.addFields({ name: '⚠️ Dikkat', value: `Botun rolü **${role.name}** rolünden düşük, bu rolü veremez. Botun rolünü yukarı taşı.` });
         return interaction.reply({ embeds: [embed], ephemeral: true });
+      }
+
+      if (sub === 'partner') {
+        const settings = getSettings(config, chosen);
+        const role = interaction.options.getRole('rol', true);
+        const count = interaction.options.getInteger('sayi', true);
+        const idx = settings.steps.findIndex(s => s.roleId === role.id);
+        if (idx < 0) return fail(`Bu rol ${label} listesinde yok.`);
+        if (idx === 0) return fail('İlk rol başlangıç rolüdür, ona terfi şartı konmaz.');
+        const steps = settings.steps.map((s, i) => (i === idx ? { ...s, partners: count } : s));
+        await saveSettings(guild.id, chosen, { ...settings, steps: validateSteps(guild, steps, chosen, config) });
+        return interaction.reply({ embeds: [successEmbed(`${label}: Partner Şartı`, ladderText(guild, validateSteps(guild, steps, chosen, config)))], ephemeral: true });
       }
 
       if (sub === 'cikar') {
@@ -139,7 +161,7 @@ module.exports = {
           embed.addFields({
             name: `${CAT_LABEL[cat]}${s.enabled ? '' : ' (kapalı)'}`,
             value: st.next
-              ? `**${roleLabel(guild, st.current.roleId)}** → **${roleLabel(guild, st.next.roleId)}**\n${bar(st.count, st.next.invites)} **${st.count}/${st.next.invites}** davet\nRank atlayınca sayaç 0'dan başlar.`
+              ? `**${roleLabel(guild, st.current.roleId)}** → **${roleLabel(guild, st.next.roleId)}**\n${bar(st.count, st.next.invites)} **${st.count}/${st.next.invites}** davet\n${st.next.partners > 0 ? `🤝 **${st.partnerCount}/${st.next.partners}** partner (davet **veya** partner yeter)\n` : ''}Rank atlayınca sayaç 0'dan başlar.`
               : `**${roleLabel(guild, st.current.roleId)}** — en üst rank, sıradaki rank yok.`,
           });
         }

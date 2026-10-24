@@ -10,6 +10,9 @@ module.exports = {
       sub.setName('ayarla').setDescription('Log kanalını seçer')
         .addChannelOption(opt => opt.setName('kanal').setDescription('Logların gideceği yazı kanalı').setRequired(true)
           .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)))
+    .addSubcommand(sub =>
+      sub.setName('partnerrol').setDescription('Partner isteklerini onaylayabilecek ve etiketlenecek rolü seçer')
+        .addRoleOption(opt => opt.setName('rol').setDescription('Partner yetkili rolü').setRequired(true)))
     .addSubcommand(sub => sub.setName('kapat').setDescription('Loglamayı kapatır'))
     .addSubcommand(sub => sub.setName('goster').setDescription('Mevcut log kanalını gösterir'))
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
@@ -24,6 +27,12 @@ module.exports = {
         embeds: [c.logChannelId ? successEmbed('Log Kanalı', `<#${c.logChannelId}>`) : warningEmbed('Log Kapalı', 'Log kanalı ayarlı değil. `/setlog ayarla` ile seç.')],
         ephemeral: true,
       });
+    }
+
+    if (sub === 'partnerrol') {
+      const role = interaction.options.getRole('rol', true);
+      await setConfig(guildId, { partnerRoleId: role.id });
+      return interaction.reply({ embeds: [successEmbed('Partner Rolü', `Partner istekleri artık ${role} rolünü etiketleyecek ve bu rol onaylayabilecek.`)], ephemeral: true });
     }
 
     if (sub === 'kapat') {

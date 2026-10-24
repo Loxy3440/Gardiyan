@@ -1,3 +1,4 @@
+const { logAction } = require('../utils/modLog');
 const { refreshActivity } = require('../utils/activityRotator');
 const { getConfig } = require('../utils/guildConfig');
 const { handleBotJoin, registerCommandGrant } = require('../utils/askPerm');
@@ -10,6 +11,7 @@ module.exports = {
   name: 'guildMemberAdd',
   once: false,
   async execute(member) {
+    logAction(member.guild, { action: 'join', target: member, fields: [{ name: 'Hesap yaşı', value: `<t:${Math.floor(member.user.createdTimestamp / 1000)}:R>`, inline: true }] });
     refreshActivity(member.client);
     scheduleUpdate(member.guild);
     syncMember(member).catch(err => console.error('[TAG]', err));

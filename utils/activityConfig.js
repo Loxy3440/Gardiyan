@@ -6,7 +6,10 @@ const DOC_ID = 'activity';
 const DEFAULT_ACTIVITY_CONFIG = {
   list: [], // [{ type: 'PLAYING'|'WATCHING'|'LISTENING'|'COMPETING'|'STREAMING', text: '/help', url?: 'https://twitch.tv/...' }, ...]
   intervalSeconds: 15,
+  status: 'online', // 'online' | 'idle' | 'dnd' | 'invisible'
 };
+
+const STATUSES = ['online', 'idle', 'dnd', 'invisible'];
 
 async function getActivityConfig() {
   const db = getDb();
@@ -40,4 +43,4 @@ async function removeActivity(index) {
   return list;
 }
 
-module.exports = { getActivityConfig, setActivityConfig, addActivity, removeActivity, isStreamUrl };
+module.exports = { STATUSES, getActivityConfig, setActivityConfig, addActivity, removeActivity, isStreamUrl };

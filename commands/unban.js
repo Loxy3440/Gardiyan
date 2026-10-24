@@ -33,7 +33,7 @@ module.exports = {
       return interaction.editReply({ embeds: [errorEmbed('Yasak kaldırma işlemi başarısız oldu.')] });
     }
 
-    await logAction(interaction.guild, { action: 'unban', target: banEntry.user, moderator: interaction.user, reason, fromPanel: interaction.fromPanel });
+    await logAction(interaction.guild, { action: 'unban', markKey: `ban:${interaction.guild.id}:${banEntry.user.id}`, target: banEntry.user, moderator: interaction.user, reason, fromPanel: interaction.fromPanel });
 
     const embed = successEmbed('Yasak kaldırıldı', `**${banEntry.user.tag}** artik sunucuya tekrar katılabilir.`)
       .addFields({ name: 'Sebep', value: reason })

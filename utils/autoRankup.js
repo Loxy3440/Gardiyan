@@ -29,7 +29,11 @@ function normalize(src) {
   const a = src || {};
   const steps = (Array.isArray(a.steps) ? a.steps : [])
     .filter(s => s && s.roleId)
-    .map((s, i) => ({ roleId: String(s.roleId), invites: i === 0 ? 0 : Math.max(1, Math.floor(Number(s.invites)) || 1) }));
+    .map((s, i) => ({
+      roleId: String(s.roleId),
+      invites: i === 0 ? 0 : Math.max(1, Math.floor(Number(s.invites)) || 1),
+      partners: i === 0 ? 0 : Math.min(MAX_INVITES, Math.max(0, Math.floor(Number(s.partners)) || 0)), // 0 = partner yolu kapalı
+    }));
   return { enabled: Boolean(a.enabled), channelId: a.channelId || null, enabledAt: a.enabledAt ? new Date(a.enabledAt) : null, steps };
 }
 
@@ -50,7 +54,7 @@ async function saveSettings(guildId, cat, next) {
     enabled: Boolean(next.enabled),
     channelId: next.channelId || null,
     enabledAt: next.enabledAt || null,
-    steps: next.steps.map((s, i) => ({ roleId: s.roleId, invites: i === 0 ? 0 : s.invites })),
+    steps: next.steps.map((s, i) => ({ roleId: s.roleId, invites: i === 0 ? 0 : s.invites, partners: i === 0 ? 0 : Math.max(0, Math.floor(Number(s.partners)) || 0) })),
   };
   await setConfig(guildId, { autoRankup: all });
 }
@@ -75,13 +79,18 @@ function validateSteps(guild, steps, cat, config) {
     if (used.has(roleId)) throw new RankupError(`"${role.name}" zaten ${CAT_LABEL[used.get(roleId)]} kategorisinde. Bir rol tek kategoride olabilir.`);
     seen.add(roleId);
     let invites = 0;
+    let partners = 0;
     if (i > 0) {
+      partners = Math.floor(Number(s.partners) || 0);
+      if (!Number.isFinite(partners) || partners < 0 || partners > MAX_INVITES) {
+        throw new RankupError(`"${role.name}" için gereken partner 0 ile ${MAX_INVITES} arasında olmalı (0 = partner ile terfi kapalı).`);
+      }
       invites = Math.floor(Number(s.invites));
       if (!Number.isFinite(invites) || invites < 1 || invites > MAX_INVITES) {
         throw new RankupError(`"${role.name}" için gereken davet 1 ile ${MAX_INVITES} arasında olmalı.`);
       }
     }
-    return { roleId, invites };
+    return { roleId, invites, partners };
   });
 }
 
@@ -91,6 +100,13 @@ async function countInvites(guildId, userId, since) {
   if (since) query.joinedAt = { $gt: since }; // sıfırlama anından SONRAKİ davetler (rank atlatan davet bir sonrakine sayılmaz)
   const list = await getDb().collection('inviteJoins').find(query, { projection: { inviteeId: 1, left: 1, isFake: 1 } }).toArray();
   return new Set(list.filter(r => !r.left && !r.isFake).map(r => r.inviteeId)).size;
+}
+
+// Onaylanmış partner sayısı (/partner ile girilip yetkili onayladıysa), sıfırlama anından SONRAKİLER.
+async function countPartners(guildId, userId, since) {
+  const query = { guildId, userId, status: 'approved' };
+  if (since) query.decidedAt = { $gt: since };
+  return getDb().collection('partnerRecords').countDocuments(query);
 }
 
 // Üyenin sahip olduğu en yüksek basamak (yoksa -1).
@@ -121,13 +137,14 @@ async function getStatus(guild, member, settings, cat) {
     await setProgress(guild.id, member.id, cat, current.roleId, since);
   }
   const count = next ? await countInvites(guild.id, member.id, since) : 0;
-  return { idx, current, next, count, since };
+  const partnerCount = next ? await countPartners(guild.id, member.id, since) : 0;
+  return { idx, current, next, count, partnerCount, since };
 }
 
 // ---------- Terfi ----------
 const busy = new Set();
 
-async function announce(guild, cat, settings, member, fromRole, toRole, nextStep) {
+async function announce(guild, cat, settings, member, fromRole, toRole, nextStep, reason = 'davet') {
   if (!settings.channelId) return;
   const channel = guild.channels.cache.get(settings.channelId);
   if (!channel?.isTextBased?.()) return;
@@ -137,10 +154,10 @@ async function announce(guild, cat, settings, member, fromRole, toRole, nextStep
   const nextRole = nextStep ? guild.roles.cache.get(nextStep.roleId) : null;
   const embed = new EmbedBuilder()
     .setTitle(`🎉 Rank Atladı (${CAT_LABEL[cat]})`)
-    .setDescription(`${member} davetleriyle **${fromRole ? fromRole.name : 'önceki rol'}** → **${toRole.name}** rankına yükseldi!`)
+    .setDescription(`${member} ${reason === 'partner' ? 'partnerleriyle' : 'davetleriyle'} **${fromRole ? fromRole.name : 'önceki rol'}** → **${toRole.name}** rankına yükseldi!`)
     .addFields({
       name: 'Davet sayacı',
-      value: nextStep ? `Sıfırlandı: **0/${nextStep.invites}**${nextRole ? ` (sonraki: ${nextRole.name})` : ''}` : 'En üst rank, sayaç kalmadı.',
+      value: nextStep ? `Sıfırlandı: **0/${nextStep.invites}** davet${nextStep.partners > 0 ? ` veya **0/${nextStep.partners}** partner` : ''}${nextRole ? ` (sonraki: ${nextRole.name})` : ''}` : 'En üst rank, sayaç kalmadı.',
     })
     .setColor(0x57f287)
     .setTimestamp();
@@ -158,7 +175,10 @@ async function checkMember(guild, member, cat) {
     if (!settings.enabled || settings.steps.length < 2) return null;
 
     const st = await getStatus(guild, member, settings, cat);
-    if (st.idx < 0 || !st.next || st.count < st.next.invites) return null;
+    if (st.idx < 0 || !st.next) return null;
+    const byInvites = st.count >= st.next.invites;
+    const byPartners = st.next.partners > 0 && st.partnerCount >= st.next.partners;
+    if (!byInvites && !byPartners) return null;
 
     const role = guild.roles.cache.get(st.next.roleId);
     const me = guild.members.me;
@@ -175,7 +195,7 @@ async function checkMember(guild, member, cat) {
 
     await setProgress(guild.id, member.id, cat, role.id, new Date()); // sayaç sıfırlanır
     const nextStep = settings.steps[st.idx + 2] || null;
-    await announce(guild, cat, settings, member, from, role, nextStep);
+    await announce(guild, cat, settings, member, from, role, nextStep, byInvites ? 'davet' : 'partner');
     return { cat, from, to: role, next: nextStep };
   } catch (err) {
     console.error('[AUTORANKUP]', err.message);
@@ -239,7 +259,7 @@ function ladderText(guild, steps) {
   return steps
     .map((s, i) => (i === 0
       ? `**1.** ${roleLabel(guild, s.roleId)} — başlangıç rolü`
-      : `**${i + 1}.** ${roleLabel(guild, s.roleId)} — bir önceki rolden sonra **${s.invites}** davet`))
+      : `**${i + 1}.** ${roleLabel(guild, s.roleId)} — bir önceki rolden sonra **${s.invites}** davet${s.partners > 0 ? ` **veya** **${s.partners}** partner` : ''}`))
     .join('\n');
 }
 
@@ -259,6 +279,7 @@ module.exports = {
   saveSettings,
   validateSteps,
   countInvites,
+  countPartners,
   currentIndex,
   getStatus,
   checkMember,

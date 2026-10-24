@@ -1,6 +1,7 @@
 const { PermissionFlagsBits } = require('discord.js');
-const { getActivityConfig, setActivityConfig, addActivity, removeActivity, isStreamUrl } = require('./activityConfig');
-const { startActivityRotation } = require('./activityRotator');
+const { STATUSES, getActivityConfig, setActivityConfig, addActivity, removeActivity, isStreamUrl } = require('./activityConfig');
+const { logAction, getRecentLogs, CATEGORIES: LOG_CATS } = require('./modLog');
+const { startActivityRotation, setBotStatus, getPresenceView } = require('./activityRotator');
 const { getConfig, setConfig, upsertMentionTrigger, removeMentionTrigger, upsertAutoResponse, removeAutoResponse } = require('./guildConfig');
 const { parseDuration } = require('./parseDuration');
 const { clearActiveTimer } = require('./activeTimers');
@@ -57,6 +58,8 @@ const handlers = {
     return {
       guild: { id: guild.id, name: guild.name },
       activity: { list: activity.list, intervalSeconds: activity.intervalSeconds },
+      presence: getPresenceView(client),
+      log: { channelId: config.logChannelId || '', categories: Object.fromEntries(Object.keys(LOG_CATS).map(k => [k, (config.logCategories || {})[k] !== false])), labels: LOG_CATS },
       mentionTriggers: config.mentionTriggers || [],
       autoResponses: config.autoResponses || [],
       roles: [...guild.roles.cache.values()].filter(r => r.id !== guild.id).sort((a, b) => b.position - a.position).map(r => ({ id: r.id, name: r.name, managed: r.managed })),
@@ -107,6 +110,38 @@ const handlers = {
     if (!Number.isFinite(s) || s < 5 || s > 3600) throw new ApiError(400, 'Süre 5 ile 3600 saniye arasında olmalı.');
     await setActivityConfig({ intervalSeconds: Math.round(s) });
     await startActivityRotation(client);
+    return { ok: true };
+  },
+
+  // ---- bot durumu (çevrimiçi / boşta / rahatsız etme / görünmez) ----
+  'POST status': async (client, b) => {
+    if (!STATUSES.includes(b.status)) throw new ApiError(400, 'Geçersiz durum.');
+    await setActivityConfig({ status: b.status });
+    setBotStatus(client, b.status);
+    return { ok: true, presence: getPresenceView(client) };
+  },
+  'GET presence': async client => getPresenceView(client),
+
+  // ---- log ----
+  'GET log': async (client, _b, _a, query) => {
+    const guild = getGuild(client);
+    const cat = query.get('cat') || undefined;
+    return { entries: await getRecentLogs(guild.id, { limit: 120, cat }) };
+  },
+  'POST log/save': async (client, b) => {
+    const guild = getGuild(client);
+    const update = {};
+    if (b.channelId !== undefined) {
+      if (b.channelId) {
+        const ch = guild.channels.cache.get(String(b.channelId));
+        if (!ch || !ch.isTextBased?.()) throw new ApiError(400, 'Log kanalı geçersiz.');
+        update.logChannelId = ch.id;
+      } else update.logChannelId = null;
+    }
+    if (b.categories && typeof b.categories === 'object') {
+      update.logCategories = Object.fromEntries(Object.keys(LOG_CATS).map(k => [k, b.categories[k] !== false]));
+    }
+    await setConfig(guild.id, update);
     return { ok: true };
   },
 
@@ -196,12 +231,14 @@ const handlers = {
     if (!member.moderatable) throw new ApiError(403, 'Bu üyeyi susturamıyorum (rolü benden yüksek).');
     const reason = str(b.reason, 200, 'Sebep', false) || 'Sebep belirtilmedi';
     await member.timeout(ms, `Panel (${actor.name}): ${reason}`);
+    await logAction(member.guild, { action: 'mute', markKey: `mute:${member.guild.id}:${member.id}`, target: member, moderator: { id: actor.id, tag: actor.name }, reason, fields: [{ name: 'Süre', value: String(b.duration), inline: true }], fromPanel: true });
     return { ok: true, message: `${member.user.tag} susturuldu.` };
   },
   'POST unmute': async (client, b, actor) => {
     const member = await getTarget(client, b.userId, actor);
     if (!member.moderatable) throw new ApiError(403, 'Bu üyeye işlem yapamıyorum.');
     await member.timeout(null, `Panel (${actor.name}): susturma kaldırıldı`);
+    await logAction(member.guild, { action: 'unmute', markKey: `mute:${member.guild.id}:${member.id}`, target: member, moderator: { id: actor.id, tag: actor.name }, fromPanel: true });
     clearActiveTimer(`mute_${member.guild.id}_${member.id}`);
     return { ok: true, message: `${member.user.tag} susturması kaldırıldı.` };
   },
@@ -209,17 +246,44 @@ const handlers = {
     const member = await getTarget(client, b.userId, actor);
     if (!member.kickable) throw new ApiError(403, 'Bu üyeyi atamıyorum (rolü benden yüksek).');
     const reason = str(b.reason, 200, 'Sebep', false) || 'Sebep belirtilmedi';
+    await logAction(member.guild, { action: 'kick', markKey: `kick:${member.guild.id}:${member.id}`, target: member, moderator: { id: actor.id, tag: actor.name }, reason, fromPanel: true });
     await member.kick(`Panel (${actor.name}): ${reason}`);
     return { ok: true, message: `${member.user.tag} sunucudan atıldı.` };
   },
 };
+
+// Panelde yapılan her ayar değişikliği log kanalına ve geçmişe yazılır (komut çalıştırma ve moderasyon zaten kendi logunu yazar).
+const PANEL_LABELS = {
+  'activity/add': b => `Aktivite eklendi: ${b.type} — ${b.text}`,
+  'activity/remove': b => `Aktivite silindi (sıra ${Number(b.index) + 1})`,
+  'activity/interval': b => `Aktivite geçiş süresi: ${b.seconds} sn`,
+  'status': b => `Bot durumu: ${({ online: 'Çevrimiçi', idle: 'Boşta', dnd: 'Rahatsız etmeyin', invisible: 'Görünmez' })[b.status] || b.status}`,
+  'mention/upsert': b => `Etiket cevabı kaydedildi: ${b.trigger}`,
+  'mention/remove': b => `Etiket cevabı silindi: ${b.trigger}`,
+  'auto/upsert': b => `Otomatik mesaj kaydedildi: ${b.trigger}`,
+  'auto/remove': b => `Otomatik mesaj silindi: ${b.trigger}`,
+  'roles/save': () => 'Rol grupları (üye/yetkili/bot) güncellendi',
+  'rankup/save': b => `Auto rank up (${b.category}) ayarları güncellendi — ${b.enabled ? 'açık' : 'kapalı'}`,
+  'log/save': () => 'Log ayarları güncellendi',
+};
+function panelLog(client, route, body, actor) {
+  const make = PANEL_LABELS[route];
+  if (!make) return; // mute/unmute/kick/commands/run kendi logunu yazar
+  const guild = client.guilds.cache.get(STATS_GUILD_ID);
+  if (!guild) return;
+  const action = route === 'status' ? 'status' : 'panel';
+  logAction(guild, { action, moderator: { id: actor.id, tag: actor.name }, fromPanel: true, description: make(body) });
+}
 
 async function handleAdmin(client, method, route, body, actor, query) {
   const fn = handlers[`${method} ${route}`];
   if (!fn) throw new ApiError(404, 'Bulunamadı.');
   try {
     const result = await fn(client, body || {}, actor, query);
-    if (method === 'POST') console.log(`[PANEL] ${actor.name} (${actor.id}) -> ${route}`);
+    if (method === 'POST') {
+      console.log(`[PANEL] ${actor.name} (${actor.id}) -> ${route}`);
+      panelLog(client, route, body || {}, actor);
+    }
     return result;
   } catch (err) {
     if (err instanceof ApiError) throw err;

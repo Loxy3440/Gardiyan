@@ -33,7 +33,7 @@ module.exports = {
 
     clearActiveTimer(`mute_${interaction.guild.id}_${member.id}`);
 
-    await logAction(interaction.guild, { action: 'unmute', target: member, moderator: interaction.user, reason, fromPanel: interaction.fromPanel });
+    await logAction(interaction.guild, { action: 'unmute', markKey: `mute:${interaction.guild.id}:${member.id}`, target: member, moderator: interaction.user, reason, fromPanel: interaction.fromPanel });
 
     const embed = successEmbed('Susturma Kaldırıldı', `**${member.user.tag}** artık tekrar konuşabilir.`)
       .addFields({ name: 'Sebep', value: reason })

@@ -34,10 +34,25 @@
       <button data-tab="roles">Roller</button>
       <button data-tab="rankup">Auto rank up</button>
       <button data-tab="members">Üyeler</button>
+      <button data-tab="log">Log</button>
       <button data-tab="commands">Tüm komutlar</button>
     </nav>
 
     <section class="pane" id="pane-activity">
+      <div class="box">
+        <h2>Bot durumu</h2>
+        <p class="hint">Botun Discord'da nasıl göründüğünü seç. Değişiklik anında uygulanır ve bot yeniden başlasa da korunur.</p>
+        <div class="bprofile" id="bProfile">
+          <div class="bavwrap"><img id="bAvatar" alt="" width="72" height="72"><span class="sdot" id="bDot"></span></div>
+          <div class="btxt"><div class="bname" id="bName">—</div><div class="bact" id="bAct">—</div></div>
+        </div>
+        <div class="statuses" id="statusPick" role="radiogroup" aria-label="Bot durumu">
+          <button type="button" class="st" data-s="online" role="radio"><span class="sdot online"></span><b>Çevrimiçi</b><small>Yeşil, aktif görünür</small></button>
+          <button type="button" class="st" data-s="idle" role="radio"><span class="sdot idle"></span><b>Boşta</b><small>Sarı ay işareti</small></button>
+          <button type="button" class="st" data-s="dnd" role="radio"><span class="sdot dnd"></span><b>Rahatsız etmeyin</b><small>Kırmızı, meşgul</small></button>
+          <button type="button" class="st" data-s="invisible" role="radio"><span class="sdot invisible"></span><b>Görünmez</b><small>Çevrimdışı görünür</small></button>
+        </div>
+      </div>
       <div class="box">
         <h2>Durum yazıları</h2>
         <p class="hint">Bot listedeki yazıları sırayla gösterir. <code>{uye}</code> yazarsan anlık üye sayısı, <code>{sunucu}</code> yazarsan sunucu sayısı gelir. Bu ayar tüm sunucular için geçerlidir.</p>
@@ -130,6 +145,21 @@
         <p class="hint">Üyeyi ara, sonra sustur, susturmayı kaldır ya da at. İşlemler denetim kaydına "Panel" olarak yazılır.</p>
         <form id="searchForm" class="row"><input id="q" minlength="2" placeholder="Üye adı (en az 2 harf)" required><button class="btn">Ara</button></form>
         <ul class="list" id="memList"></ul>
+      </div>
+    </section>
+
+    <section class="pane" id="pane-log" hidden>
+      <div class="box">
+        <h2>Log ayarları</h2>
+        <p class="hint">Aşağıdaki olaylar seçtiğin kanala yazılır ve burada son kayıtlar olarak görünür. Siteden yaptığın her işlem de loglanır (kaynak: Web paneli).</p>
+        <div class="fld"><label>Log kanalı</label><select id="logChannel"></select></div>
+        <div class="fld"><label>Neler loglansın?</label><div class="catgrid" id="logCats"></div></div>
+        <div class="row"><button class="btn" id="logSave" type="button">Kaydet</button></div>
+      </div>
+      <div class="box">
+        <h2>Son kayıtlar</h2>
+        <div class="row"><select id="logFilter" aria-label="Kategori"></select><button class="btn alt" id="logRefresh" type="button">Yenile</button></div>
+        <ul class="list logl" id="logList"></ul>
       </div>
     </section>
 

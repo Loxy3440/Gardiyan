@@ -13,6 +13,8 @@ let rotateTimer = null;
 let refreshTimer = null;
 let rotateIndex = 0;
 let currentEntry = null;
+let currentRendered = null;
+let currentStatus = 'online';
 
 // Üye sayısı hangi sunucudan okunacak (.env STATS_GUILD_ID ile değiştirilebilir).
 const STATS_GUILD_ID = process.env.STATS_GUILD_ID || '1554352519084253265';
@@ -34,6 +36,7 @@ function renderText(client, text) {
 function applyOne(client, entry) {
   if (!client.user) return;
   currentEntry = entry;
+  currentRendered = { type: entry.type, text: renderText(client, entry.text) };
   const options = { type: TYPE_MAP[entry.type] ?? 3 };
   if (entry.type === 'STREAMING') {
     if (entry.url) options.url = entry.url; // url yoksa Discord normal "Oynuyor" gibi gosterir
@@ -64,6 +67,8 @@ async function startActivityRotation(client) {
   let config;
   try {
     config = await getActivityConfig();
+    currentStatus = config.status || 'online';
+    client.user.setStatus(currentStatus);
   } catch (err) {
     console.error('[ACTIVITY] Config okunamadi, varsayilan kullaniliyor:', err.message);
     client.user.setActivity('/help', { type: 3 });
@@ -71,6 +76,7 @@ async function startActivityRotation(client) {
   }
 
   if (!config.list.length) {
+    currentRendered = { type: 'WATCHING', text: '/help' };
     client.user.setActivity('/help', { type: 3 }); // varsayilan
     return;
   }
@@ -92,4 +98,19 @@ async function startActivityRotation(client) {
   }
 }
 
-module.exports = { startActivityRotation, refreshActivity, getMemberCount, STATS_GUILD_ID, TYPE_MAP };
+// Panelden (veya komutla) botun durumunu değiştirir; ayar veritabanına yazılır, bot yeniden başlasa da korunur.
+function setBotStatus(client, status) {
+  currentStatus = status;
+  client.user?.setStatus(status);
+}
+
+// Panelde gösterilecek anlık görünüm.
+function getPresenceView(client) {
+  return {
+    status: currentStatus,
+    activity: currentRendered,
+    bot: client.user ? { name: client.user.username, avatar: client.user.displayAvatarURL({ size: 128 }) } : null,
+  };
+}
+
+module.exports = { setBotStatus, getPresenceView, startActivityRotation, refreshActivity, getMemberCount, STATS_GUILD_ID, TYPE_MAP };

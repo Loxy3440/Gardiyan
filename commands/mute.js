@@ -73,7 +73,7 @@ module.exports = {
       .setTimestamp();
 
     await logAction(interaction.guild, {
-      action: 'mute', target: member, moderator: interaction.user, reason,
+      action: 'mute', markKey: `mute:${interaction.guild.id}:${member.id}`, target: member, moderator: interaction.user, reason,
       fields: [{ name: 'Süre', value: durationInput, inline: true }], imageUrl: attachment.url, fromPanel: interaction.fromPanel,
     });
 
