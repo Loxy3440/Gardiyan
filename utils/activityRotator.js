@@ -7,6 +7,7 @@ const TYPE_MAP = {
   LISTENING: 2,
   WATCHING: 3,
   COMPETING: 5,
+  CUSTOM: 4, // özel durum yazısı ("Oynuyor" gibi bir ön ek olmadan sadece metin)
 };
 
 let rotateTimer = null;
@@ -37,6 +38,10 @@ function applyOne(client, entry) {
   if (!client.user) return;
   currentEntry = entry;
   currentRendered = { type: entry.type, text: renderText(client, entry.text) };
+  if (entry.type === 'CUSTOM') {
+    client.user.setPresence({ activities: [{ name: 'Custom Status', type: 4, state: renderText(client, entry.text) }], status: currentStatus });
+    return;
+  }
   const options = { type: TYPE_MAP[entry.type] ?? 3 };
   if (entry.type === 'STREAMING') {
     if (entry.url) options.url = entry.url; // url yoksa Discord normal "Oynuyor" gibi gosterir

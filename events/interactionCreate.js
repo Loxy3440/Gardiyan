@@ -452,6 +452,7 @@ module.exports = {
             { label: 'Izliyor (Watching)', value: 'WATCHING', emoji: '<:99270bearpeek:1557027531016765511>' },
             { label: 'Dinliyor (Listening)', value: 'LISTENING', emoji: '<:8945voiceheadphones:1557027795031298188>' },
             { label: 'Yarisiyor (Competing)', value: 'COMPETING', emoji: '<:55902trophy:1557027982789443694>' },
+            { label: 'Ozel durum (yazi)', value: 'CUSTOM', emoji: '💬' },
           );
 
         return interaction.reply({

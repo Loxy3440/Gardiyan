@@ -7,6 +7,7 @@ const TYPE_LABELS = {
   WATCHING: 'Izliyor (Watching)',
   LISTENING: 'Dinliyor (Listening)',
   COMPETING: 'Yarisiyor (Competing)',
+  CUSTOM: 'Ozel durum (yazi)',
 };
 
 function buildStatusEmbed(config) {

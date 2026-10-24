@@ -11,7 +11,7 @@ const { getTop, formatVoice } = require('./stats');
 const { presenceEnabled } = require('./statusRole');
 const { getAllSettings: getRankupAll, getSettings: getRankupSettings, saveSettings: saveRankupSettings, validateSteps, RankupError, CATEGORIES } = require('./autoRankup');
 
-const TYPES = ['PLAYING', 'STREAMING', 'WATCHING', 'LISTENING', 'COMPETING'];
+const TYPES = ['PLAYING', 'STREAMING', 'WATCHING', 'LISTENING', 'COMPETING', 'CUSTOM'];
 const MAX_TIMEOUT_MS = 28 * 24 * 60 * 60 * 1000;
 
 class ApiError extends Error {

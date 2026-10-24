@@ -21,7 +21,7 @@ function rolePicker(mount) {
 const pickers = {};
 const lockSub = r => (r.allowedRoleIds && r.allowedRoleIds.length ? " · 🔒 " + r.allowedRoleIds.map(roleName).join(", ") : "");
 
-const TYPE = { WATCHING: "İzliyor", PLAYING: "Oynuyor", STREAMING: "Yayında", LISTENING: "Dinliyor", COMPETING: "Yarışıyor" };
+const TYPE = { WATCHING: "İzliyor", PLAYING: "Oynuyor", STREAMING: "Yayında", LISTENING: "Dinliyor", COMPETING: "Yarışıyor", CUSTOM: "Durum:" };
 
 function toast(msg, err) {
   const t = $("toast");
@@ -90,7 +90,7 @@ function renderPresence(p) {
   if (p.bot) { $("bName").textContent = p.bot.name; $("bAvatar").src = p.bot.avatar; }
   $("bDot").className = "sdot " + p.status;
   const a = p.activity;
-  const verb = { WATCHING: "İzliyor", PLAYING: "Oynuyor", STREAMING: "Yayında", LISTENING: "Dinliyor", COMPETING: "Yarışıyor" };
+  const verb = { WATCHING: "İzliyor", PLAYING: "Oynuyor", STREAMING: "Yayında", LISTENING: "Dinliyor", COMPETING: "Yarışıyor", CUSTOM: "Durum:" };
   $("bAct").textContent = a ? (verb[a.type] || "") + " " + a.text : "Aktivite yok";
   document.querySelectorAll("#statusPick .st").forEach(b => b.setAttribute("aria-checked", String(b.dataset.s === p.status)));
 }
