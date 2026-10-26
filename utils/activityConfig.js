@@ -8,6 +8,7 @@ const DEFAULT_ACTIVITY_CONFIG = {
   intervalSeconds: 15,
   status: 'online', // 'online' | 'idle' | 'dnd' | 'invisible'
   customStatus: '', // botun profilindeki durum yazısı (balon); aktivite listesinden bağımsızdır
+  richEnabled: false, // panelden açılıp kapatılan Rich Presence (içerik utils/richPresence.js taslağında)
 };
 
 const STATUSES = ['online', 'idle', 'dnd', 'invisible'];

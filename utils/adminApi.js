@@ -1,8 +1,8 @@
 const { PermissionFlagsBits } = require('discord.js');
 const { STATUSES, getActivityConfig, setActivityConfig, addActivity, updateActivity, removeActivity, isStreamUrl } = require('./activityConfig');
-const { getUserRp, saveUserRp } = require('./userRp');
+const { getTemplateView } = require('./richPresence');
 const { logAction, getRecentLogs, CATEGORIES: LOG_CATS } = require('./modLog');
-const { startActivityRotation, setBotStatus, getPresenceView } = require('./activityRotator');
+const { startActivityRotation, setBotStatus, getPresenceView, setRichPresence } = require('./activityRotator');
 const { getConfig, setConfig, upsertMentionTrigger, removeMentionTrigger, upsertAutoResponse, removeAutoResponse } = require('./guildConfig');
 const { parseDuration } = require('./parseDuration');
 const { clearActiveTimer } = require('./activeTimers');
@@ -64,47 +64,6 @@ function readActivity(b) {
     if (!isStreamUrl(url)) throw new ApiError(400, 'Yayın adresi Twitch veya YouTube olmalı (https://twitch.tv/...).');
   }
   return { type: b.type, text, url, state };
-}
-
-// Hesap Rich Presence formunu dogrular.
-const RP_TYPES = [0, 2, 3, 5];
-const RP_IMAGE = /^(https:\/\/\S+|[A-Za-z0-9_.\-]+)$/; // Art Asset anahtari veya https resim linki
-function rpText(v, name) {
-  const s = str(v, 128, name, false);
-  if (s && s.length < 2) throw new ApiError(400, `${name} en az 2 karakter olmalı (Discord kuralı).`);
-  return s;
-}
-function rpImage(v, name) {
-  const s = str(v, 300, name, false);
-  if (s && !RP_IMAGE.test(s)) throw new ApiError(400, `${name}: Art Asset adı (örn. pocoyo) veya https:// ile başlayan resim linki olmalı.`);
-  return s;
-}
-function readRp(b) {
-  const type = Number(b.type);
-  if (!RP_TYPES.includes(type)) throw new ApiError(400, 'Geçersiz etkinlik türü.');
-  if (!['none', 'now'].includes(b.timer)) throw new ApiError(400, 'Geçersiz süre sayacı seçimi.');
-  if (!Array.isArray(b.buttons) || b.buttons.length > 2) throw new ApiError(400, 'En fazla 2 buton ekleyebilirsin.');
-  const buttons = b.buttons.map((x, i) => {
-    const label = str(x && x.label, 32, `Buton ${i + 1} yazısı`);
-    const url = str(x && x.url, 512, `Buton ${i + 1} linki`);
-    if (!/^https?:\/\/\S+$/i.test(url)) throw new ApiError(400, `Buton ${i + 1} linki http:// veya https:// ile başlamalı.`);
-    return { label, url };
-  });
-  const out = {
-    enabled: !!b.enabled,
-    type,
-    appName: str(b.appName, 64, 'Uygulama adı', false),
-    details: rpText(b.details, 'Üst satır'),
-    state: rpText(b.state, 'Alt satır'),
-    largeImage: rpImage(b.largeImage, 'Büyük resim'),
-    largeText: rpText(b.largeText, 'Büyük resim yazısı'),
-    smallImage: rpImage(b.smallImage, 'Küçük resim'),
-    smallText: rpText(b.smallText, 'Küçük resim yazısı'),
-    timer: b.timer,
-    buttons,
-  };
-  if (out.enabled && !out.details && !out.state && !out.largeImage) throw new ApiError(400, 'En az üst satır, alt satır veya büyük resimden birini doldur.');
-  return out;
 }
 
 const handlers = {
@@ -195,11 +154,11 @@ const handlers = {
   },
   'GET presence': async client => getPresenceView(client),
 
-  // ---- hesap Rich Presence (bilgisayardaki rpc-client okur) ----
-  'GET rp': async () => ({ rp: await getUserRp(), keySet: String(process.env.RP_KEY || '').length >= 16 }),
-  'POST rp/save': async (_client, b) => {
-    await saveUserRp(readRp(b));
-    return { ok: true, rp: await getUserRp(), message: 'Kaydedildi. Bilgisayardaki script 15 sn içinde uygular.' };
+  // ---- Rich Presence: icerik utils/richPresence.js taslaginda, panelde sadece ac/kapat ----
+  'GET rp': async client => ({ enabled: getPresenceView(client).richOn, template: getTemplateView() }),
+  'POST rp/save': async (client, b) => {
+    await setRichPresence(client, !!b.enabled);
+    return { ok: true, enabled: !!b.enabled, template: getTemplateView(), message: b.enabled ? 'Rich Presence açıldı.' : 'Rich Presence kapatıldı.' };
   },
 
   // ---- log ----
@@ -376,7 +335,7 @@ const handlers = {
 const PANEL_LABELS = {
   'activity/add': b => `Aktivite eklendi: ${b.type} — ${b.text}`,
   'activity/update': b => `Aktivite düzenlendi (sıra ${Number(b.index) + 1}): ${b.type} — ${b.text}`,
-  'rp/save': b => (b.enabled ? 'Hesap Rich Presence güncellendi' : 'Hesap Rich Presence kapatıldı'),
+  'rp/save': b => (b.enabled ? 'Rich Presence açıldı' : 'Rich Presence kapatıldı'),
   'activity/remove': b => `Aktivite silindi (sıra ${Number(b.index) + 1})`,
   'activity/interval': b => `Aktivite geçiş süresi: ${b.seconds} sn`,
   'botstatus': b => (b.text ? `Bot durum yazısı: ${b.text}` : 'Bot durum yazısı kaldırıldı'),

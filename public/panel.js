@@ -260,50 +260,19 @@ function editActivity(i, a) {
   f.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
-// ---- Hesabım Rich Presence ----
+// ---- Rich Presence (sadece ac/kapat; icerik utils/richPresence.js taslaginda) ----
 const URP_VERB = { 0: "oynuyor", 2: "dinliyor", 3: "izliyor", 5: "yarışıyor" };
-function urpBody() {
-  const buttons = [["urpB1L", "urpB1U"], ["urpB2L", "urpB2U"]].map(([l, u]) => ({ label: $(l).value.trim(), url: $(u).value.trim() })).filter(b => b.label || b.url);
-  return {
-    enabled: $("urpOn").checked, type: Number($("urpType").value), appName: $("urpApp").value.trim(),
-    details: $("urpDetails").value.trim(), state: $("urpState").value.trim(),
-    largeImage: $("urpLarge").value.trim(), largeText: $("urpLargeT").value.trim(),
-    smallImage: $("urpSmall").value.trim(), smallText: $("urpSmallT").value.trim(),
-    timer: $("urpTimer").value, buttons,
-  };
+function fillUrp(d) {
+  $("urpOn").checked = !!d.enabled;
+  const t = d.template || {};
+  $("urpHead").textContent = (t.name || "Uygulama") + " " + (URP_VERB[t.type] || "");
+  $("urpD").textContent = t.details || ""; $("urpS").textContent = t.state || "";
+  $("urpE").hidden = !t.timer || t.timer === "yok"; $("urpE").textContent = "⏱ süre sayacı açık";
 }
-const urpImgSrc = v => (/^https:\/\//.test(v) ? v : "");
-function urpPreview() {
-  const b = urpBody();
-  $("urpHead").textContent = (b.appName || "Uygulama") + " " + (URP_VERB[b.type] || "");
-  $("urpD").textContent = b.details; $("urpS").textContent = b.state;
-  const li = $("urpLImg"), si = $("urpSImg");
-  li.hidden = !urpImgSrc(b.largeImage); if (!li.hidden) li.src = b.largeImage;
-  si.hidden = !urpImgSrc(b.smallImage); if (!si.hidden) si.src = b.smallImage;
-  $("urpE").hidden = b.timer !== "now";
-  $("urpBtns").replaceChildren(...b.buttons.map(x => el("span", { text: x.label || "…" })));
-}
-function fillUrp(rp) {
-  $("urpOn").checked = !!rp.enabled; $("urpType").value = String(rp.type); $("urpApp").value = rp.appName || "";
-  $("urpDetails").value = rp.details || ""; $("urpState").value = rp.state || "";
-  $("urpLarge").value = rp.largeImage || ""; $("urpLargeT").value = rp.largeText || "";
-  $("urpSmall").value = rp.smallImage || ""; $("urpSmallT").value = rp.smallText || "";
-  $("urpTimer").value = rp.timer || "now";
-  const [b1 = {}, b2 = {}] = rp.buttons || [];
-  $("urpB1L").value = b1.label || ""; $("urpB1U").value = b1.url || ""; $("urpB2L").value = b2.label || ""; $("urpB2U").value = b2.url || "";
-  urpPreview();
-}
-async function loadUserRp() {
-  const d = await api("rp");
-  $("rpKeyWarn").hidden = d.keySet;
-  fillUrp(d.rp);
-}
+async function loadUserRp() { fillUrp(await api("rp")); }
 function wireUserRp() {
-  $("urpForm").addEventListener("input", urpPreview);
-  $("urpForm").addEventListener("submit", e => { e.preventDefault(); run($("urpSave"), async () => { const r = await api("rp/save", urpBody()); fillUrp(r.rp); return r; }); });
-  setInterval(() => { if (!$("pane-userrp").hidden && !$("urpE").hidden) { const t = Math.floor((Date.now() - (urpStart || Date.now())) / 1000); $("urpE").textContent = "🎮 " + [Math.floor(t / 3600), Math.floor(t % 3600 / 60), t % 60].map(n => String(n).padStart(2, "0")).join(":"); } }, 1000);
+  $("urpForm").addEventListener("submit", e => { e.preventDefault(); run($("urpSave"), async () => { const r = await api("rp/save", { enabled: $("urpOn").checked }); fillUrp(r); return r; }); });
 }
-let urpStart = Date.now();
 
 function wireBotStatus() {
   $("bsForm").addEventListener("submit", e => { e.preventDefault(); run(e.target.querySelector("button"), async () => { const r = await api("botstatus", { text: $("bsText").value.trim() }); renderPresence(r.presence); }, "Durum yazısı kaydedildi"); });
@@ -324,7 +293,7 @@ function wire() {
     $("pageTitle").textContent = b.lastChild.textContent.trim();
     document.querySelectorAll(".pane").forEach(p => (p.hidden = p.id !== "pane-" + b.dataset.tab));
     if (b.dataset.tab === "stats") loadStats().catch(err => toast(err.message, true));
-    if (b.dataset.tab === "userrp") { urpStart = Date.now(); loadUserRp().catch(err => toast(err.message, true)); }
+    if (b.dataset.tab === "userrp") { loadUserRp().catch(err => toast(err.message, true)); }
     if (b.dataset.tab === "durum") loadDurum().catch(err => toast(err.message, true));
     if (b.dataset.tab === "log") loadLogs().catch(err => toast(err.message, true));
   });

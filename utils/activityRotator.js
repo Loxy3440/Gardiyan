@@ -1,4 +1,5 @@
-const { getActivityConfig } = require('./activityConfig');
+const { getActivityConfig, setActivityConfig } = require('./activityConfig');
+const rich = require('./richPresence');
 
 // Discord.js ActivityType degerleri: Playing=0, Streaming=1, Listening=2, Watching=3, Competing=5
 const TYPE_MAP = {
@@ -16,6 +17,20 @@ let rotateIndex = 0;
 let currentEntry = null;
 let currentRendered = null;
 let currentStatus = 'online';
+let richOn = false;
+let richOpenedAt = 0;
+let richTimer = null;
+
+// Rich Presence taslagini gateway'e yollar (acikken 30 sn'de bir tazelenir; baglanti yenilense de kaybolmaz).
+function applyRich(client) {
+  if (!client.user) return;
+  try { rich.sendRaw(client, rich.buildActivity(client, richOpenedAt), rich.getStatus()); }
+  catch (err) { console.error('[RICH PRESENCE]', err.message); }
+}
+
+function stopRichTimer() {
+  if (richTimer) { clearInterval(richTimer); richTimer = null; }
+}
 
 // Üye sayısı hangi sunucudan okunacak (.env STATS_GUILD_ID ile değiştirilebilir).
 const STATS_GUILD_ID = process.env.STATS_GUILD_ID || '1554352519084253265';
@@ -39,6 +54,7 @@ let customText = ''; // botun durum yazısı (balon), aktivite listesinden bağ�
 // Botun gerçek presence'ını kurar: önce (varsa) durum yazısı, sonra dönen aktivite.
 function pushPresence(client, entry) {
   if (!client.user) return;
+  if (richOn) return applyRich(client);
   const activities = [];
   if (customText) activities.push({ name: 'Custom Status', type: 4, state: renderText(client, customText) });
   if (entry && entry.type !== 'CUSTOM') {
@@ -88,6 +104,17 @@ async function startActivityRotation(client) {
     config = await getActivityConfig();
     currentStatus = config.status || 'online';
     customText = String(config.customStatus || '').trim();
+    richOn = !!config.richEnabled;
+    if (richOn) {
+      if (!richOpenedAt) richOpenedAt = Date.now();
+      applyRich(client);
+      stopRichTimer();
+      richTimer = setInterval(() => applyRich(client), 30_000);
+      richTimer.unref?.();
+      return; // Rich Presence acikken normal aktivite dongusu calismaz
+    }
+    richOpenedAt = 0;
+    stopRichTimer();
     client.user.setStatus(currentStatus);
   } catch (err) {
     console.error('[ACTIVITY] Config okunamadi, varsayilan kullaniliyor:', err.message);
@@ -122,13 +149,22 @@ async function startActivityRotation(client) {
 // Panelden (veya komutla) botun durumunu değiştirir; ayar veritabanına yazılır, bot yeniden başlasa da korunur.
 function setBotStatus(client, status) {
   currentStatus = status;
+  if (richOn) return; // Rich Presence acikken durum taslaktaki status'ten gelir
   client.user?.setStatus(status);
+}
+
+// Panelden Rich Presence'i acar/kapatir (ayar veritabanina yazilir, bot yeniden baslasa da korunur).
+async function setRichPresence(client, enabled) {
+  await setActivityConfig({ richEnabled: !!enabled });
+  richOpenedAt = 0; // her acista sure sayaci sifirdan baslar
+  await startActivityRotation(client);
 }
 
 // Panelde gösterilecek anlık görünüm.
 function getPresenceView(client) {
   return {
     status: currentStatus,
+    richOn,
     activity: currentRendered,
     customRaw: customText,
     custom: customText ? renderText(client, customText) : '',
@@ -136,4 +172,4 @@ function getPresenceView(client) {
   };
 }
 
-module.exports = { setBotStatus, getPresenceView, startActivityRotation, refreshActivity, getMemberCount, STATS_GUILD_ID, TYPE_MAP };
+module.exports = { setRichPresence, setBotStatus, getPresenceView, startActivityRotation, refreshActivity, getMemberCount, STATS_GUILD_ID, TYPE_MAP };
