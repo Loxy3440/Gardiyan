@@ -19,6 +19,7 @@
       <span class="grp">Bot</span>
       <button data-tab="home" class="on"><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7"/><path d="M5 9v12h14V9"/><path d="M9 21v-7h6v7"/></svg></i>Genel bakış</button>
       <button data-tab="activity"><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></i>Aktivite</button>
+      <button data-tab="userrp"><i aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="4"/><path d="M7 10v4M5 12h4M15 11h.01M18 13h.01"/></svg></i>Hesabım RP</button>
       <button data-tab="commands"><i aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h.01M11 8h.01M15 8h.01M7 12h.01M11 12h.01M15 12h.01M8 16h8"/></svg></i>Tüm komutlar</button>
       <span class="grp">Otomasyon</span>
       <button data-tab="mention"><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-12.8 7.3L3 20l1.3-4.4A8.5 8.5 0 1 1 21 11.5Z"/><path d="M9 11h.01M15 11h.01"/></svg></i>Etiket cevapları</button>
@@ -116,6 +117,45 @@
           <input name="seconds" type="number" min="5" max="3600" id="intVal" required>
           <button class="btn alt">Kaydet</button>
         </form>
+      </div>
+    </section>
+
+    <section class="pane" id="pane-userrp" hidden>
+      <div class="box">
+        <h2>Hesabım Rich Presence</h2>
+        <p class="hint">Kendi Discord hesabında görünen etkinlik (resimler, alt satırlar, süre, butonlar). Bu ayarı <b>bilgisayarındaki <code>rpc-client</code></b> okuyup Discord masaüstü uygulamasına basar; yani script çalışırken ve Discord açıkken geçerli. Bot durumundan bağımsızdır.</p>
+        <p class="hint" id="rpKeyWarn" hidden>⚠️ Render'da <code>RP_KEY</code> tanımlı değil (en az 16 karakter). Tanımlanmadan bilgisayardaki script ayarı çekemez.</p>
+        <div class="rpgrid">
+          <div>
+            <form id="urpForm" class="rpform">
+              <label class="chk"><input type="checkbox" id="urpOn" style="width:auto"> Rich Presence açık</label>
+              <div class="row"><select id="urpType" aria-label="Tür"><option value="5">Yarışıyor</option><option value="0">Oynuyor</option><option value="2">Dinliyor</option><option value="3">İzliyor</option></select>
+                <input id="urpApp" maxlength="64" placeholder="Uygulama adı (sadece önizleme)"></div>
+              <p class="hint" style="margin:6px 0 0">Discord'da görünen ad, Developer Portal'da RPC için kullandığın uygulamanın adıdır.</p>
+              <div class="row"><input id="urpDetails" maxlength="128" placeholder="Üst satır"></div>
+              <div class="row"><input id="urpState" maxlength="128" placeholder="Alt satır"></div>
+              <div class="row"><input id="urpLarge" maxlength="300" placeholder="Büyük resim (asset adı veya https:// link)"></div>
+              <div class="row"><input id="urpLargeT" maxlength="128" placeholder="Büyük resim yazısı (üstüne gelince)"></div>
+              <div class="row"><input id="urpSmall" maxlength="300" placeholder="Küçük resim (asset adı veya https:// link)"></div>
+              <div class="row"><input id="urpSmallT" maxlength="128" placeholder="Küçük resim yazısı"></div>
+              <div class="row"><label for="urpTimer">Süre sayacı</label><select id="urpTimer"><option value="now">Kaydedildiği andan beri</option><option value="none">Gösterme</option></select></div>
+              <div class="row"><input id="urpB1L" maxlength="32" placeholder="Buton 1 yazısı"><input id="urpB1U" maxlength="512" type="url" placeholder="https://..."></div>
+              <div class="row"><input id="urpB2L" maxlength="32" placeholder="Buton 2 yazısı"><input id="urpB2U" maxlength="512" type="url" placeholder="https://..."></div>
+              <div class="row"><button class="btn" id="urpSave">Kaydet</button></div>
+            </form>
+          </div>
+          <div>
+            <div class="urpc" aria-label="Önizleme">
+              <div class="urph" id="urpHead">—</div>
+              <div class="urpm">
+                <div class="urpimgs"><img id="urpLImg" alt="" hidden><img id="urpSImg" alt="" hidden class="sm"></div>
+                <div class="urpt"><div class="urpd" id="urpD"></div><div class="urps" id="urpS"></div><div class="urpe" id="urpE" hidden>🎮 00:00:00</div></div>
+              </div>
+              <div class="urpbtns" id="urpBtns"></div>
+            </div>
+            <p class="hint" style="margin-top:10px">Resim kutuları: Developer Portal > uygulaman > Rich Presence > Art Assets'e yüklediğin görselin adını yaz. https:// link de deneyebilirsin ama Discord bazen kabul etmez. Önizleme sadece yaklaşık görünümdür.</p>
+          </div>
+        </div>
       </div>
     </section>
 

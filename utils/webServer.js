@@ -4,6 +4,7 @@ const path = require('path');
 const { getMemberCount, STATS_GUILD_ID } = require('./activityRotator');
 const auth = require('./dashAuth');
 const { handleAdmin, ApiError } = require('./adminApi');
+const { getUserRp } = require('./userRp');
 
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 const MIME = {
@@ -133,6 +134,16 @@ function startWebServer(client) {
       } catch (err) {
         return sendJson(res, err.status || 500, { error: err.message || 'Hata' });
       }
+    }
+
+    // Bilgisayardaki rpc-client scripti icin: Authorization: Bearer RP_KEY (Render'da RP_KEY en az 16 karakter).
+    if (url.pathname === '/api/rp/config') {
+      const key = String(process.env.RP_KEY || '');
+      const given = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+      const a = Buffer.from(given), b = Buffer.from(key);
+      if (key.length < 16 || a.length !== b.length || !require('crypto').timingSafeEqual(a, b)) return sendJson(res, 401, { error: 'Yetkisiz.' });
+      try { return sendJson(res, 200, await getUserRp()); }
+      catch (err) { return sendJson(res, 500, { error: 'Okunamadı.' }); }
     }
 
     if (url.pathname === '/api/stats') {

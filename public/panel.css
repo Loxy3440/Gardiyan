@@ -386,3 +386,20 @@ body.pn #toast.err { color: #a53e46; border-color: #e8bfc0; }
 .rps{color:var(--mute);font-size:14px;overflow-wrap:anywhere}
 .rpform .row:first-of-type{margin-top:0}
 .rpform .row input[name=text]{flex:1;min-width:0}
+
+/* ---- Hesap Rich Presence ---- */
+.rpgrid{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+@media (max-width:820px){.rpgrid{grid-template-columns:1fr}}
+.rpgrid .row input{flex:1;min-width:0}
+.urpc{background:#232428;color:#dbdee1;border-radius:10px;padding:14px;font:14px "IBM Plex Sans",sans-serif;max-width:340px}
+.urph{font-size:13px;color:#b5bac1;margin-bottom:10px}
+.urpm{display:flex;gap:12px}
+.urpimgs{position:relative;width:60px;height:60px;flex:none;border-radius:8px;background:#383a40}
+.urpimgs img{width:60px;height:60px;border-radius:8px;object-fit:cover;display:block}
+.urpimgs img.sm{position:absolute;right:-6px;bottom:-6px;width:24px;height:24px;border-radius:50%;border:2px solid #232428}
+.urpt{min-width:0;display:flex;flex-direction:column;justify-content:center}
+.urpd,.urps{overflow-wrap:anywhere;font-size:14px}
+.urpd{font-weight:600}
+.urpe{color:#23a55a;font-size:13px;margin-top:2px}
+.urpbtns{display:grid;gap:8px;margin-top:12px}
+.urpbtns span{background:#4e5058;border-radius:6px;text-align:center;padding:8px;font-weight:500}
