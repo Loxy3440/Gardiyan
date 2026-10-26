@@ -2,6 +2,11 @@ const { SlashCommandBuilder, PermissionFlagsBits, REST, Routes } = require('disc
 const fs = require('fs');
 const path = require('path');
 const { errorEmbed, successEmbed } = require('../utils/embeds');
+const WEB_ONLY_SETTINGS = new Set([
+  'askperm', 'auto', 'autorole', 'channelbip', 'eventlist', 'kategori',
+  'mention', 'setactivity', 'setdurum', 'setevent', 'setklan', 'setlog',
+  'setmention', 'setnick', 'setroles', 'settag', 'setyt', 'vcc',
+]);
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -32,7 +37,9 @@ module.exports = {
         const command = require(fullPath);
         if (command && command.data && typeof command.execute === 'function') {
           interaction.client.commands.set(command.data.name, command);
-          commandsJSON.push(command.data.toJSON());
+          if (!WEB_ONLY_SETTINGS.has(command.data.name)) {
+            commandsJSON.push(command.data.toJSON());
+          }
           reloaded++;
         } else {
           failed.push(file);

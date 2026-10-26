@@ -37,6 +37,11 @@ const { handlePartnerInteraction } = require('../utils/partner');
 const { handleAskPermInteraction } = require('../utils/askPerm');
 const { handleRoleGroupsInteraction } = require('../utils/roleGroups');
 const { handleTriggerRolesInteraction } = require('../utils/triggerRoles');
+const WEB_ONLY_SETTINGS = new Set([
+  'askperm', 'auto', 'autorole', 'channelbip', 'eventlist', 'kategori',
+  'mention', 'setactivity', 'setdurum', 'setevent', 'setklan', 'setlog',
+  'setmention', 'setnick', 'setroles', 'settag', 'setyt', 'vcc',
+]);
 
 module.exports = {
   name: 'interactionCreate',
@@ -44,6 +49,14 @@ module.exports = {
   async execute(interaction) {
     // ---------- SLASH KOMUTLARI ----------
     if (interaction.isChatInputCommand()) {
+      if (WEB_ONLY_SETTINGS.has(interaction.commandName)) {
+        await interaction.reply({
+          content: 'Bu ayar yalnızca Gardiyan web panelinden yönetilebilir.',
+          ephemeral: true,
+        }).catch(() => {});
+        return;
+      }
+
       const command = interaction.client.commands.get(interaction.commandName);
       if (!command) return;
 

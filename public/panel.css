@@ -224,3 +224,156 @@ body.pn #toast{background:#21182e;border-color:rgba(198,174,236,.19);box-shadow:
 body.pn #toast.err{border-color:rgba(251,113,133,.35);color:#ffacb7}
 body.pn .rank .item{background:rgba(28,21,39,.88)}
 @media(max-width:900px){body.pn .side .tabs button{background:rgba(28,21,39,.84);border:1px solid var(--line)}body.pn .side .tabs button.on{border-color:rgba(181,140,255,.42)}}
+
+/* Gardiyan panel refresh: compact owner control room, matching the new preview. */
+body.pn {
+  --bg: #f5f3ed;
+  --panel: #fffefa;
+  --panel-2: #f6f4ee;
+  --line: #e5e2d9;
+  --ink: #263446;
+  --mute: #78818b;
+  --brass: #4d8877;
+  --ok: #4d987b;
+  --bad: #c95d61;
+  color: var(--ink);
+  background-color: var(--bg);
+  background-image: none;
+}
+body.pn a { color: #3e796a; }
+body.pn code { color: #3e796a; background: #edf4ef; border-color: #dce9e0; }
+body.pn .side {
+  background: #263448;
+  border-color: #34445a;
+  backdrop-filter: none;
+}
+body.pn .sbrand .logo {
+  color: #253346;
+  background: #a8d1c2;
+  box-shadow: none;
+}
+body.pn .side .grp { color: #9eacbb; }
+body.pn .side .tabs button { color: #c3ccd6; }
+body.pn .side .tabs button:hover {
+  background: rgba(255,255,255,.07);
+  color: #fff;
+}
+body.pn .side .tabs button.on {
+  color: #fff;
+  background: #3e7869;
+  box-shadow: inset 3px 0 #e5bd83;
+}
+body.pn .side .tabs button i svg {
+  display: block;
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+body.pn .main { max-width: 1320px; }
+body.pn .main header {
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 18px;
+}
+body.pn .box {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(39, 48, 58, .035);
+}
+body.pn .box h2 { color: var(--ink); }
+body.pn .stat {
+  background: var(--panel);
+  border-color: var(--line);
+  box-shadow: 0 6px 20px rgba(39, 48, 58, .035);
+}
+body.pn .stat b { color: var(--ink); }
+body.pn .item,
+body.pn .chip,
+body.pn .st,
+body.pn .catgrid label {
+  background: var(--panel-2);
+  border-color: var(--line);
+}
+body.pn .item:hover,
+body.pn .chip:hover,
+body.pn .catgrid label:hover { border-color: #b9d2c7; }
+body.pn .st[aria-checked="true"] {
+  background: #edf5f0;
+  border-color: #77a995;
+  box-shadow: 0 0 0 1px #77a995 inset;
+}
+body.pn .btn {
+  color: #fff;
+  background: #3e7869;
+  border: 1px solid #3e7869;
+  box-shadow: none;
+}
+body.pn .btn:hover { background: #356b5d; filter: none; }
+body.pn .btn.alt {
+  color: var(--ink);
+  background: var(--panel-2);
+  border-color: var(--line);
+}
+body.pn .btn.danger {
+  color: #a53e46;
+  background: #fff1ef;
+  border-color: #f0d2ce;
+}
+body.pn input,
+body.pn select,
+body.pn textarea {
+  color: var(--ink);
+  background: #fffefa;
+  border-color: #dcded8;
+}
+body.pn input:focus,
+body.pn select:focus,
+body.pn textarea:focus {
+  outline-color: #76a995;
+  box-shadow: 0 0 0 3px rgba(118, 169, 149, .13);
+}
+body.pn .dprev {
+  background: #fffefa;
+  border-color: var(--line);
+  box-shadow: 0 8px 22px rgba(39, 48, 58, .06);
+}
+body.pn .dbanner { background: linear-gradient(120deg, #b4d7c8, #e6c99f 62%, #c4d9d3); }
+body.pn .dbody .bavwrap img { border-color: #fffefa; background: #fffefa; }
+body.pn .dbody .bavwrap .sdot { border-color: #fffefa; }
+body.pn .bubble {
+  color: var(--ink);
+  background: #fffefa;
+  border-color: var(--line);
+  box-shadow: 0 5px 16px rgba(39, 48, 58, .12);
+}
+body.pn .bubble::after { background: #fffefa; border-color: var(--line); }
+body.pn .tag { color: #315d52; background: #dcece4; }
+body.pn .note {
+  color: #75582b;
+  background: #fbf4e5;
+  border-color: #eee0bf;
+}
+body.pn .note.bad {
+  color: #a53e46;
+  background: #fff1ef;
+  border-color: #f0d2ce;
+}
+body.pn #toast {
+  color: var(--ink);
+  background: #fffefa;
+  border-color: var(--line);
+  box-shadow: 0 10px 28px rgba(39, 48, 58, .14);
+}
+body.pn #toast.err { color: #a53e46; border-color: #e8bfc0; }
+@media (max-width: 900px) {
+  body.pn .side .tabs button {
+    color: #d6dee6;
+    background: rgba(255,255,255,.07);
+    border-color: rgba(255,255,255,.12);
+  }
+  body.pn .side .tabs button.on { background: #3e7869; border-color: #70a893; }
+}
