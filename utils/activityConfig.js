@@ -28,11 +28,24 @@ function isStreamUrl(url) {
   return /^https:\/\/(www\.|m\.)?(twitch\.tv|youtube\.com|youtu\.be)\/\S+$/i.test(String(url || '').trim());
 }
 
-async function addActivity(type, text, url = null) {
-  const config = await getActivityConfig();
+function buildEntry(type, text, url = null, state = '') {
   const entry = { type, text };
   if (type === 'STREAMING') entry.url = String(url).trim();
-  const list = [...config.list, entry];
+  const st = String(state || '').trim();
+  if (st) entry.state = st; // Rich Presence ikinci satir (bot icin Discord'un izin verdigi tek ek alan)
+  return entry;
+}
+
+async function addActivity(type, text, url = null, state = '') {
+  const config = await getActivityConfig();
+  const list = [...config.list, buildEntry(type, text, url, state)];
+  await setActivityConfig({ list });
+  return list;
+}
+
+async function updateActivity(index, type, text, url = null, state = '') {
+  const config = await getActivityConfig();
+  const list = config.list.map((a, i) => (i === index ? buildEntry(type, text, url, state) : a));
   await setActivityConfig({ list });
   return list;
 }
@@ -44,4 +57,4 @@ async function removeActivity(index) {
   return list;
 }
 
-module.exports = { STATUSES, getActivityConfig, setActivityConfig, addActivity, removeActivity, isStreamUrl };
+module.exports = { STATUSES, getActivityConfig, setActivityConfig, addActivity, updateActivity, removeActivity, isStreamUrl };

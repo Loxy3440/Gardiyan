@@ -1,5 +1,5 @@
 const { PermissionFlagsBits } = require('discord.js');
-const { STATUSES, getActivityConfig, setActivityConfig, addActivity, removeActivity, isStreamUrl } = require('./activityConfig');
+const { STATUSES, getActivityConfig, setActivityConfig, addActivity, updateActivity, removeActivity, isStreamUrl } = require('./activityConfig');
 const { logAction, getRecentLogs, CATEGORIES: LOG_CATS } = require('./modLog');
 const { startActivityRotation, setBotStatus, getPresenceView } = require('./activityRotator');
 const { getConfig, setConfig, upsertMentionTrigger, removeMentionTrigger, upsertAutoResponse, removeAutoResponse } = require('./guildConfig');
@@ -52,6 +52,19 @@ function roleList(guild, v, name = 'Roller') {
   return ids;
 }
 
+// Panelden gelen aktivite alanlarini dogrular (add ve update ortak kullanir).
+function readActivity(b) {
+  if (!TYPES.includes(b.type)) throw new ApiError(400, 'Geçersiz aktivite türü.');
+  const text = str(b.text, 100, 'Metin');
+  const state = str(b.state, 128, 'Alt satır', false);
+  let url = null;
+  if (b.type === 'STREAMING') {
+    url = str(b.url, 200, 'Yayın adresi');
+    if (!isStreamUrl(url)) throw new ApiError(400, 'Yayın adresi Twitch veya YouTube olmalı (https://twitch.tv/...).');
+  }
+  return { type: b.type, text, url, state };
+}
+
 const handlers = {
   // ---- okuma ----
   'GET overview': async client => {
@@ -96,14 +109,16 @@ const handlers = {
 
   // ---- aktivite ----
   'POST activity/add': async (client, b) => {
-    if (!TYPES.includes(b.type)) throw new ApiError(400, 'Geçersiz aktivite türü.');
-    const text = str(b.text, 100, 'Metin');
-    let url = null;
-    if (b.type === 'STREAMING') {
-      url = str(b.url, 200, 'Yayın adresi');
-      if (!isStreamUrl(url)) throw new ApiError(400, 'Yayın adresi Twitch veya YouTube olmalı (https://twitch.tv/...).');
-    }
-    await addActivity(b.type, text, url);
+    const { type, text, url, state } = readActivity(b);
+    await addActivity(type, text, url, state);
+    await startActivityRotation(client);
+    return { ok: true };
+  },
+  'POST activity/update': async (client, b) => {
+    const config = await getActivityConfig();
+    if (!Number.isInteger(b.index) || b.index < 0 || b.index >= config.list.length) throw new ApiError(400, 'Geçersiz sıra.');
+    const { type, text, url, state } = readActivity(b);
+    await updateActivity(b.index, type, text, url, state);
     await startActivityRotation(client);
     return { ok: true };
   },
@@ -311,6 +326,7 @@ const handlers = {
 // Panelde yapılan her ayar değişikliği log kanalına ve geçmişe yazılır (komut çalıştırma ve moderasyon zaten kendi logunu yazar).
 const PANEL_LABELS = {
   'activity/add': b => `Aktivite eklendi: ${b.type} — ${b.text}`,
+  'activity/update': b => `Aktivite düzenlendi (sıra ${Number(b.index) + 1}): ${b.type} — ${b.text}`,
   'activity/remove': b => `Aktivite silindi (sıra ${Number(b.index) + 1})`,
   'activity/interval': b => `Aktivite geçiş süresi: ${b.seconds} sn`,
   'botstatus': b => (b.text ? `Bot durum yazısı: ${b.text}` : 'Bot durum yazısı kaldırıldı'),

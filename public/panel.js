@@ -78,7 +78,9 @@ function render(d) {
   $("intVal").value = d.activity.intervalSeconds;
 
   $("actList").replaceChildren(...d.activity.list.map((a, i) =>
-    row(a.text, (TYPE[a.type] || a.type) + (a.url ? " · " + a.url : ""), el("button", { class: "btn sm danger", text: "Sil", onclick: e => run(e.target, async () => { await api("activity/remove", { index: i }); await load(); }, "Silindi") }))));
+    row(a.text, (TYPE[a.type] || a.type) + (a.state ? " · " + a.state : "") + (a.url ? " · " + a.url : ""),
+      el("button", { class: "btn sm alt", text: "Düzenle", onclick: () => editActivity(i, a) }),
+      el("button", { class: "btn sm danger", text: "Sil", onclick: e => run(e.target, async () => { await api("activity/remove", { index: i }); await load(); }, "Silindi") }))));
 
   const mk = (list, remove, fill) => list.map(r =>
     row(r.trigger, (r.response || "(sadece medya)") + (r.mediaUrl ? " 📎" : "") + (r.cooldownSeconds ? ` · ${r.cooldownSeconds}sn` : "") + lockSub(r),
@@ -100,6 +102,9 @@ function renderPresence(p) {
   const bub = $("bBubble"); bub.hidden = !p.custom; bub.textContent = p.custom || "";
   const verb = { WATCHING: "İzliyor", PLAYING: "Oynuyor", STREAMING: "Yayında", LISTENING: "Dinliyor", COMPETING: "Yarışıyor", CUSTOM: "Durum:" };
   $("bAct").textContent = a ? (verb[a.type] || "") + " " + a.text : "Aktivite yok";
+  $("rpVerb").textContent = a ? (verb[a.type] || "") : "—";
+  $("rpName").textContent = a ? a.text : "Aktivite yok";
+  $("rpState").hidden = !(a && a.state); $("rpState").textContent = (a && a.state) || "";
   if (document.activeElement !== $("bsText")) $("bsText").value = p.customRaw || "";
   document.querySelectorAll("#statusPick .st").forEach(b => b.setAttribute("aria-checked", String(b.dataset.s === p.status)));
 }
@@ -238,6 +243,23 @@ function wireDurum() {
   $("stRefresh").addEventListener("click", e => run(e.target, async () => { await loadStats(); return { message: "Yenilendi" }; }));
 }
 
+// ---- Aktivite formu: ekleme / düzenleme modu ----
+function resetActForm() {
+  const f = $("actForm");
+  f.reset(); $("actIndex").value = "";
+  $("actSubmit").textContent = "Ekle"; $("actCancel").hidden = true;
+  f.elements.type.dispatchEvent(new Event("change"));
+}
+function editActivity(i, a) {
+  const f = $("actForm");
+  if (a.type === "CUSTOM") { toast("Eski 'durum yazısı' kaydı düzenlenemez; sil ve yeniden ekle.", true); return; }
+  $("actIndex").value = String(i);
+  f.elements.type.value = a.type; f.elements.text.value = a.text || ""; $("actState").value = a.state || ""; $("actUrl").value = a.url || "";
+  f.elements.type.dispatchEvent(new Event("change"));
+  $("actSubmit").textContent = "Kaydet"; $("actCancel").hidden = false;
+  f.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
 function wireBotStatus() {
   $("bsForm").addEventListener("submit", e => { e.preventDefault(); run(e.target.querySelector("button"), async () => { const r = await api("botstatus", { text: $("bsText").value.trim() }); renderPresence(r.presence); }, "Durum yazısı kaydedildi"); });
 }
@@ -270,7 +292,15 @@ function wire() {
   const actType = $("actForm").elements.type, actUrl = $("actUrl");
   const syncUrl = () => { const on = actType.value === "STREAMING"; actUrl.hidden = !on; actUrl.required = on; };
   actType.addEventListener("change", syncUrl); syncUrl();
-  submit("actForm", "activity/add", d => (d.type === "STREAMING" ? d : { type: d.type, text: d.text }), f => { f.text.value = ""; f.url.value = ""; });
+  $("actCancel").addEventListener("click", resetActForm);
+  $("actForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const f = e.target, d = formData(f), editing = d.index !== "";
+    const body = { type: d.type, text: d.text, state: d.state || "" };
+    if (d.type === "STREAMING") body.url = d.url;
+    if (editing) body.index = Number(d.index);
+    if (await run($("actSubmit"), async () => { await api(editing ? "activity/update" : "activity/add", body); await load(); }, editing ? "Aktivite güncellendi" : "Aktivite eklendi")) resetActForm();
+  });
   submit("intForm", "activity/interval", d => ({ seconds: Number(d.seconds) }));
   submit("menForm", "mention/upsert", d => ({ ...d, allowedRoleIds: pickers.men.get() }), f => { f.reset(); pickers.men.set([]); });
   submit("autoForm", "auto/upsert", d => ({ ...d, cooldownSeconds: Number(d.cooldownSeconds) || 3, allowedRoleIds: pickers.auto.get() }), f => { f.reset(); f.cooldownSeconds.value = 3; pickers.auto.set([]); });

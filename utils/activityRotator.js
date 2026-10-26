@@ -44,6 +44,7 @@ function pushPresence(client, entry) {
   if (entry && entry.type !== 'CUSTOM') {
     const a = { name: renderText(client, entry.text), type: TYPE_MAP[entry.type] ?? 3 };
     if (entry.type === 'STREAMING' && entry.url) a.url = entry.url; // url yoksa Discord normal "Oynuyor" gibi gosterir
+    if (entry.state) a.state = renderText(client, entry.state); // Rich Presence ikinci satir
     activities.push(a);
   } else if (entry && entry.type === 'CUSTOM' && !customText) {
     activities.push({ name: 'Custom Status', type: 4, state: renderText(client, entry.text) }); // eski kayıtlar
@@ -54,14 +55,17 @@ function pushPresence(client, entry) {
 function applyOne(client, entry) {
   if (!client.user) return;
   currentEntry = entry;
-  currentRendered = { type: entry.type, text: renderText(client, entry.text) };
+  currentRendered = { type: entry.type, text: renderText(client, entry.text), state: entry.state ? renderText(client, entry.state) : '' };
   pushPresence(client, entry);
 }
 
 // Üye katılıp/ayrılınca ve düzenli aralıkla çağrılır: şu an gösterilen aktiviteyi güncel sayıyla yeniler.
 function refreshActivity(client) {
   const re = /\{(uye|members|sunucu|guilds)\}/i;
-  if ((currentEntry && re.test(currentEntry.text)) || re.test(customText)) pushPresence(client, currentEntry);
+  if ((currentEntry && (re.test(currentEntry.text) || re.test(currentEntry.state || ''))) || re.test(customText)) {
+    if (currentEntry) currentRendered = { type: currentEntry.type, text: renderText(client, currentEntry.text), state: currentEntry.state ? renderText(client, currentEntry.state) : '' };
+    pushPresence(client, currentEntry);
+  }
 }
 
 // Kaydedilen aktivite listesini/suresini okuyup uygular ve gerekirse donguyu (rotation) yeniden baslatir.

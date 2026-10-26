@@ -377,3 +377,12 @@ body.pn #toast.err { color: #a53e46; border-color: #e8bfc0; }
   }
   body.pn .side .tabs button.on { background: #3e7869; border-color: #70a893; }
 }
+
+/* ---- Rich Presence önizleme / form ---- */
+.rpcard{background:var(--panel-2);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:14px}
+.rph{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin-bottom:6px}
+.rpv{font-size:13px;color:var(--mute)}
+.rpn{font-weight:600;overflow-wrap:anywhere}
+.rps{color:var(--mute);font-size:14px;overflow-wrap:anywhere}
+.rpform .row:first-of-type{margin-top:0}
+.rpform .row input[name=text]{flex:1;min-width:0}

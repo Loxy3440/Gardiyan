@@ -90,7 +90,14 @@
         <h2>Aktiviteler</h2>
         <p class="hint">Bot listedeki aktiviteleri sırayla gösterir (İzliyor, Oynuyor…). <code>{uye}</code> yazarsan anlık üye sayısı, <code>{sunucu}</code> yazarsan sunucu sayısı gelir. Bu ayar tüm sunucular için geçerlidir.</p>
         <ul class="list" id="actList"></ul>
-        <form id="actForm" class="row">
+        <div class="rpcard" id="rpCard" aria-label="Rich Presence önizleme">
+          <div class="rph">Şu an gösterilen</div>
+          <div class="rpb"><div class="rpv" id="rpVerb">—</div><div class="rpn" id="rpName"></div><div class="rps" id="rpState" hidden></div></div>
+        </div>
+        <p class="hint">Discord botlara Rich Presence'ın sadece şu alanlarını açar: tür, isim, <b>alt satır</b> ve yayın linki. Resim, buton ve süre sayacı botlarda çalışmaz. Alt satır bazı Discord istemcilerinde görünmeyebilir.</p>
+        <form id="actForm" class="rpform">
+          <input type="hidden" name="index" id="actIndex" value="">
+          <div class="row">
           <select name="type" aria-label="Tür">
             <option value="WATCHING">İzliyor</option>
             <option value="PLAYING">Oynuyor</option>
@@ -98,9 +105,11 @@
             <option value="LISTENING">Dinliyor</option>
             <option value="COMPETING">Yarışıyor</option>
           </select>
-          <input name="text" maxlength="100" placeholder="{uye} üye" required>
-          <input name="url" id="actUrl" maxlength="200" type="url" placeholder="https://twitch.tv/kullanici" hidden>
-          <button class="btn">Ekle</button>
+          <input name="text" maxlength="100" placeholder="İsim (örn. {uye} üye)" required>
+          </div>
+          <div class="row"><input name="state" id="actState" maxlength="128" placeholder="Alt satır (isteğe bağlı, örn. .gg/miyagido)"></div>
+          <div class="row"><input name="url" id="actUrl" maxlength="200" type="url" placeholder="https://twitch.tv/kullanici" hidden></div>
+          <div class="row"><button class="btn" id="actSubmit">Ekle</button><button type="button" class="btn alt" id="actCancel" hidden>Vazgeç</button></div>
         </form>
         <form id="intForm" class="row">
           <label>Geçiş süresi (sn)</label>
