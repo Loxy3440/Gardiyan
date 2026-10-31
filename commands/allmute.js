@@ -63,7 +63,7 @@ module.exports = {
     const report = new EmbedBuilder()
       .setColor(notMuted ? 0xe67e22 : 0x57f287)
       .setTitle('/allmute tamamlandı')
-      .setDescription('Aynı ses kanalında, komutu kullanan kişi hariç seçilen üyeler sunucu sesinde susturuldu.')
+      .setDescription('Komut anında aynı ses kanalındaki üyeler işlendi; komutu kullanan kişi hariç tutuldu.')
       .addFields(
         { name: 'Yeni susturulan', value: String(muted), inline: true },
         { name: 'Zaten susturulmuş', value: String(alreadyMuted), inline: true },
