@@ -68,11 +68,20 @@ function renderStats(s) {
   $("sMembers").textContent = s.members.toLocaleString("tr-TR"); $("sGuilds").textContent = s.guilds;
   $("sPing").textContent = s.ping > 0 ? s.ping + " ms" : "—"; $("sUp").textContent = fmtUp(s.uptime); $("sCmds").textContent = s.commands;
 }
+function renderAutoNick(a) {
+  if (!a) return;
+  $("anEnabled").checked = !!a.enabled;
+  if (document.activeElement !== $("anText")) $("anText").value = a.text || "";
+  $("anPosition").value = a.position === "basa" ? "basa" : "sona";
+  $("anBots").checked = !!a.includeBots;
+}
+
 function render(d) {
   ROLES = d.roles || [];
   renderStats(d.stats);
   renderPresence(d.presence);
   renderLogSettings(d);
+  renderAutoNick(d.autoNick);
   Object.values(pickers).forEach(p => p.redraw());
   if (pickers.member && !groupsLoaded) { groupsLoaded = true; pickers.member.set(d.roleGroups.member); pickers.staff.set(d.roleGroups.staff); pickers.bot.set(d.roleGroups.bot); }
   $("intVal").value = d.activity.intervalSeconds;
@@ -285,6 +294,15 @@ function wire() {
     await api("roles/save", { member: pickers.member.get(), staff: pickers.staff.get(), bot: pickers.bot.get() });
     await load();
   }, "Roller kaydedildi"));
+
+  $("anSave").addEventListener("click", e => run(e.target, async () => {
+    const result = await api("autonick/save", {
+      enabled: $("anEnabled").checked, text: $("anText").value.trim(),
+      position: $("anPosition").value, includeBots: $("anBots").checked,
+    });
+    await load();
+    return result;
+  }));
 
   wireRankup(); wireStatus(); wireLog(); wireDurum(); wireBotStatus(); wireUserRp();
   $("tabs").addEventListener("click", e => {

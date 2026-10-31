@@ -24,6 +24,7 @@
       <span class="grp">Otomasyon</span>
       <button data-tab="mention"><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-12.8 7.3L3 20l1.3-4.4A8.5 8.5 0 1 1 21 11.5Z"/><path d="M9 11h.01M15 11h.01"/></svg></i>Etiket cevapları</button>
       <button data-tab="auto"><i aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 3v5M8 13h.01M16 13h.01M9 17h6"/></svg></i>Otomatik mesaj</button>
+      <button data-tab="autonick"><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/><path d="M8 3v4M16 10v4M10 17v4"/></svg></i>Oto-nick</button>
       <button data-tab="roles"><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5"/></svg></i>Roller</button>
       <button data-tab="rankup"><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 17 6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></i>Auto rank up</button>
       <button data-tab="durum"><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s-8-4.4-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 6.6-8 11-8 11Z"/></svg></i>Durum rolü</button>
@@ -172,6 +173,18 @@
           <div class="fld"><label>Kullanabilecek roller</label><div id="autoRoles"></div><div class="d">Boş bırakırsan herkes kullanır. Rol seçersen sadece o rollerdekilere cevap verir.</div></div>
           <button class="btn">Ekle / güncelle</button>
         </form>
+      </div>
+    </section>
+
+    <section class="pane" id="pane-autonick" hidden>
+      <div class="box">
+        <h2>Otomatik takma ad</h2>
+        <p class="hint">Yeni katılan üyelerin takma adına belirlediğin yazıyı ekler. Ayarlar bu sunucu için kaydedilir; mevcut üyelerin adı değişmez.</p>
+        <label class="chk"><input type="checkbox" id="anEnabled"> Oto-nick açık</label>
+        <div class="fld"><label for="anText">Takma ada eklenecek yazı (en fazla 20 karakter)</label><input id="anText" maxlength="20" placeholder="Örn. • GARDIYAN •"></div>
+        <div class="fld"><label for="anPosition">Yazının konumu</label><select id="anPosition"><option value="basa">Başa ekle</option><option value="sona">Sona ekle</option></select></div>
+        <label class="chk"><input type="checkbox" id="anBots"> Bot hesaplarına da uygula</label>
+        <div class="row"><button class="btn" id="anSave" type="button">Kaydet</button></div>
       </div>
     </section>
 

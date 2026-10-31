@@ -15,6 +15,10 @@ const DEFAULT_CONFIG = {
   autoRoleEnabled: false,
   autoRoleId: null, // oyuncu (insan) uyelere verilecek rol
   autoRoleBotId: null, // bot uyelere verilecek rol
+  autoNickEnabled: false, // yeni uye takma adi ayari
+  autoNickText: '',
+  autoNickPosition: 'sona', // 'basa' | 'sona'
+  autoNickIncludeBots: false,
   copyChannels: [], // [{ sourceChannelId, targetChannelId }, ...] - /copy ile acilan kopyalama modlari
   vcChannelId: null, // /vcc ile ayarlanan, bot acilista otomatik girecegi ses kanali
   activityTriggers: [], // [{ watchId, watchType: 'category'|'channel', notifyChannelId, message, newChannelMessage, cooldownSeconds }, ...]

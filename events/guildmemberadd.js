@@ -1,6 +1,7 @@
 const { logAction } = require('../utils/modLog');
 const { refreshActivity } = require('../utils/activityRotator');
 const { getConfig } = require('../utils/guildConfig');
+const { applyAutoNick } = require('../utils/autoNick');
 const { handleBotJoin, registerCommandGrant } = require('../utils/askPerm');
 const { recordJoin } = require('../utils/inviteTracker');
 const { syncMember } = require('../utils/tagRole');
@@ -26,6 +27,7 @@ module.exports = {
 
     try {
       const config = await getConfig(member.guild.id);
+      await applyAutoNick(member, config).catch(err => console.error('[AUTONICK]', err.message));
 
       // Bot eklendiyse kurucu rolünden izin iste (normal üyeler için izin istenmez).
       if (member.user.bot) {

@@ -87,6 +87,7 @@ const handlers = {
       autoResponses: config.autoResponses || [],
       roles: [...guild.roles.cache.values()].filter(r => r.id !== guild.id).sort((a, b) => b.position - a.position).map(r => ({ id: r.id, name: r.name, managed: r.managed })),
       roleGroups: { member: config.roleMemberIds || [], staff: config.roleStaffIds || [], bot: config.roleBotIds || [] },
+      autoNick: { enabled: !!config.autoNickEnabled, text: config.autoNickText || '', position: config.autoNickPosition === 'basa' ? 'basa' : 'sona', includeBots: !!config.autoNickIncludeBots },
       autoRankup: Object.fromEntries(Object.entries(getRankupAll(config)).map(([cat, { enabled, channelId, steps }]) => [cat, { enabled, channelId, steps }])),
       channels: [...guild.channels.cache.values()].filter(c => c.type === 0 || c.type === 5).sort((a, b) => a.rawPosition - b.rawPosition).map(c => ({ id: c.id, name: c.name })),
     };
@@ -106,6 +107,17 @@ const handlers = {
         mutedUntil: m.communicationDisabledUntilTimestamp && m.communicationDisabledUntilTimestamp > Date.now() ? m.communicationDisabledUntilTimestamp : null,
       })),
     };
+  },
+
+  'POST autonick/save': async (client, b) => {
+    const guild = getGuild(client);
+    if (typeof b.enabled !== 'boolean') throw new ApiError(400, 'Oto-nick durumu geçersiz.');
+    const text = str(b.text, 20, 'Takma ad yazısı', false);
+    if (b.enabled && !text) throw new ApiError(400, 'Oto-nick açıkken yazıyı boş bırakamazsın.');
+    if (!['basa', 'sona'].includes(b.position)) throw new ApiError(400, 'Yazının konumu geçersiz.');
+    if (typeof b.includeBots !== 'boolean') throw new ApiError(400, 'Bot seçimi geçersiz.');
+    await setConfig(guild.id, { autoNickEnabled: b.enabled, autoNickText: text, autoNickPosition: b.position, autoNickIncludeBots: b.includeBots });
+    return { ok: true, message: b.enabled ? 'Oto-nick kaydedildi.' : 'Oto-nick kapatıldı.' };
   },
 
   // ---- aktivite ----
@@ -347,6 +359,7 @@ const PANEL_LABELS = {
   'roles/save': () => 'Rol grupları (üye/yetkili/bot) güncellendi',
   'rankup/save': b => `Auto rank up (${b.category}) ayarları güncellendi — ${b.enabled ? 'açık' : 'kapalı'}`,
   'log/save': () => 'Log ayarları güncellendi',
+  'autonick/save': b => (b.enabled ? 'Oto-nick açıldı: ' + b.text : 'Oto-nick kapatıldı'),
   'durum/save': b => (b.enabled ? `Durum rolü ayarlandı: "${b.text}"` : 'Durum rolü kapatıldı'),
 };
 function panelLog(client, route, body, actor) {
