@@ -9,7 +9,7 @@ const BLOCKED = { close: 'Botu kapatır; kapanınca panel de kapanır. Sadece Di
 const HAS_TAB = { setactivity: 'activity', setmention: 'mention', auto: 'auto' };
 // Komutun kodu "komutun yazıldığı kanalı" kullanıyorsa kanal seçmek zorunlu (yanlış kanalda işlem olmasın).
 const NEEDS_CHANNEL = new Set(['delete', 'lock', 'invite', 'copy', 'slowmode']);
-const DANGER = new Set(['ban', 'kick', 'unban', 'dmall', 'rolall', 'delete', 'emojiall', 'lock', 'refresh', 'copy', 'setevent']);
+const DANGER = new Set(['ban', 'kick', 'unban', 'dmall', 'rolall', 'delete', 'emojiall', 'lock', 'refresh', 'copy', 'setevent', 'allmute']);
 
 const jobs = new Map(); // id -> { status, outputs, error, started, userId }
 const JOB_TTL = 60 * 60 * 1000;

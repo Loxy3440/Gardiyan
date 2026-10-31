@@ -140,14 +140,19 @@
     const btn = el("button", { class: "btn", type: "submit", text: "Çalıştır" });
     const f = el("form", { class: "stack", onsubmit: async e => {
       e.preventDefault();
-      if (cmd.danger && !confirm("/" + cmd.name + " çalıştırılsın mı? Bu işlem geri alınamayabilir.")) return;
+      if (cmd.danger) {
+        const warning = cmd.name === "allmute"
+          ? "Bulunduğun ses kanalındaki seçilen üyeler susturulacak. Devam edilsin mi?"
+          : "/" + cmd.name + " çalıştırılsın mı? Bu işlem geri alınamayabilir.";
+        if (!confirm(warning)) return;
+      }
       btn.disabled = true;
       try {
         const { jobId } = await api("commands/run", { name: cmd.name, sub, values: state, channelId });
         await poll(jobId);
       } catch (err) { toast(err.message, true); }
       btn.disabled = false;
-    } }, subSel, fields, chSel, cmd.danger ? el("div", { class: "note bad", text: "Dikkat: bu komut çalışınca geri alınamayabilir. Çalıştırmadan önce onay istenecek." }) : null, btn);
+    } }, subSel, fields, chSel, cmd.danger ? el("div", { class: "note bad", text: cmd.name === "allmute" ? "Bulunduğun ses kanalındaki seçilen üyeler susturulacak; bot hesaplarını da seçebilirsin. Çalıştırmadan önce onay istenecek." : "Dikkat: bu komut çalışınca geri alınamayabilir. Çalıştırmadan önce onay istenecek." }) : null, btn);
     form.replaceChildren(...head, ...notes, f);
   }
 
