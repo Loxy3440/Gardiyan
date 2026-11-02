@@ -8,6 +8,7 @@ const { parseDuration } = require('./parseDuration');
 const { clearActiveTimer } = require('./activeTimers');
 const { STATS_GUILD_ID } = require('./activityRotator');
 const runner = require('./commandRunner');
+const cc = require('./customCommands');
 const { getTop, formatVoice } = require('./stats');
 const { presenceEnabled } = require('./statusRole');
 const { getAllSettings: getRankupAll, getSettings: getRankupSettings, saveSettings: saveRankupSettings, validateSteps, RankupError, CATEGORIES } = require('./autoRankup');
@@ -87,7 +88,6 @@ const handlers = {
       autoResponses: config.autoResponses || [],
       roles: [...guild.roles.cache.values()].filter(r => r.id !== guild.id).sort((a, b) => b.position - a.position).map(r => ({ id: r.id, name: r.name, managed: r.managed })),
       roleGroups: { member: config.roleMemberIds || [], staff: config.roleStaffIds || [], bot: config.roleBotIds || [] },
-      autoNick: { enabled: !!config.autoNickEnabled, text: config.autoNickText || '', position: config.autoNickPosition === 'basa' ? 'basa' : 'sona', includeBots: !!config.autoNickIncludeBots },
       autoRankup: Object.fromEntries(Object.entries(getRankupAll(config)).map(([cat, { enabled, channelId, steps }]) => [cat, { enabled, channelId, steps }])),
       channels: [...guild.channels.cache.values()].filter(c => c.type === 0 || c.type === 5).sort((a, b) => a.rawPosition - b.rawPosition).map(c => ({ id: c.id, name: c.name })),
     };
@@ -107,17 +107,6 @@ const handlers = {
         mutedUntil: m.communicationDisabledUntilTimestamp && m.communicationDisabledUntilTimestamp > Date.now() ? m.communicationDisabledUntilTimestamp : null,
       })),
     };
-  },
-
-  'POST autonick/save': async (client, b) => {
-    const guild = getGuild(client);
-    if (typeof b.enabled !== 'boolean') throw new ApiError(400, 'Oto-nick durumu geçersiz.');
-    const text = str(b.text, 20, 'Takma ad yazısı', false);
-    if (b.enabled && !text) throw new ApiError(400, 'Oto-nick açıkken yazıyı boş bırakamazsın.');
-    if (!['basa', 'sona'].includes(b.position)) throw new ApiError(400, 'Yazının konumu geçersiz.');
-    if (typeof b.includeBots !== 'boolean') throw new ApiError(400, 'Bot seçimi geçersiz.');
-    await setConfig(guild.id, { autoNickEnabled: b.enabled, autoNickText: text, autoNickPosition: b.position, autoNickIncludeBots: b.includeBots });
-    return { ok: true, message: b.enabled ? 'Oto-nick kaydedildi.' : 'Oto-nick kapatıldı.' };
   },
 
   // ---- aktivite ----
@@ -172,6 +161,15 @@ const handlers = {
     await setRichPresence(client, !!b.enabled);
     return { ok: true, enabled: !!b.enabled, template: getTemplateView(), message: b.enabled ? 'Rich Presence açıldı.' : 'Rich Presence kapatıldı.' };
   },
+
+  // ---- komut ekle (kod yazmadan / dosya yukleyerek) ----
+  'GET cmdlist': async () => ({ commands: await cc.getList(), github: cc.githubInfo() }),
+  'POST cmd/create': async (client, b, actor) => {
+    const o = cc.validateBuilder(b);
+    return cc.addCommand(client, cc.buildCode(o), { actorName: actor.name, origin: 'kodsuz' });
+  },
+  'POST cmd/upload': async (client, b, actor) => cc.addCommand(client, b.code, { actorName: actor.name, origin: 'dosya' }),
+  'POST cmd/remove': async (client, b) => cc.removeCommand(client, String(b.name || '')),
 
   // ---- log ----
   'GET log': async (client, _b, _a, query) => {
@@ -347,6 +345,9 @@ const handlers = {
 const PANEL_LABELS = {
   'activity/add': b => `Aktivite eklendi: ${b.type} — ${b.text}`,
   'activity/update': b => `Aktivite düzenlendi (sıra ${Number(b.index) + 1}): ${b.type} — ${b.text}`,
+  'cmd/create': b => `Komut eklendi: /${b.name}`,
+  'cmd/upload': () => 'Komut dosyası yüklendi',
+  'cmd/remove': b => `Komut silindi: /${b.name}`,
   'rp/save': b => (b.enabled ? 'Rich Presence açıldı' : 'Rich Presence kapatıldı'),
   'activity/remove': b => `Aktivite silindi (sıra ${Number(b.index) + 1})`,
   'activity/interval': b => `Aktivite geçiş süresi: ${b.seconds} sn`,
@@ -359,7 +360,6 @@ const PANEL_LABELS = {
   'roles/save': () => 'Rol grupları (üye/yetkili/bot) güncellendi',
   'rankup/save': b => `Auto rank up (${b.category}) ayarları güncellendi — ${b.enabled ? 'açık' : 'kapalı'}`,
   'log/save': () => 'Log ayarları güncellendi',
-  'autonick/save': b => (b.enabled ? 'Oto-nick açıldı: ' + b.text : 'Oto-nick kapatıldı'),
   'durum/save': b => (b.enabled ? `Durum rolü ayarlandı: "${b.text}"` : 'Durum rolü kapatıldı'),
 };
 function panelLog(client, route, body, actor) {
@@ -383,7 +383,7 @@ async function handleAdmin(client, method, route, body, actor, query) {
     return result;
   } catch (err) {
     if (err instanceof ApiError) throw err;
-    if (err instanceof runner.PanelError) throw new ApiError(400, err.message);
+    if (err instanceof runner.PanelError || err instanceof cc.CmdError) throw new ApiError(400, err.message);
     console.error('[PANEL]', route, err);
     throw new ApiError(500, 'İşlem başarısız: ' + (err.message || 'bilinmeyen hata'));
   }

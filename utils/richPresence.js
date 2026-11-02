@@ -5,25 +5,25 @@
 // =====================================================================
 const RICH_PRESENCE = {
   // Etkinlik turu: 0 = Oynuyor, 2 = Dinliyor, 3 = Izliyor, 5 = Yarisiyor
-  type: 3,
+  type: 0,
 
   // Discord'da "Oynuyor ..." satirinda gorunen ad.
-  name: 'MiyagiDo',
+  name: 'Gardiyan',
 
   // Ust satir (details) ve alt satir (state). Bos birakirsan gosterilmez. En az 2 karakter.
   // {uye} ve {sunucu} yazarsan canli sayiyla degisir.
-  details: '{uye} MiyagiDo Üyesi',
-  state: '',
+  details: 'Sunucuyu koruyor',
+  state: '{uye} uye izleniyor',
 
   // Resimler: Developer Portal > uygulaman > Rich Presence > Art Assets'e yukledigin gorselin ADI.
   // (https:// link calismaz, sadece asset adi yaz.) Bos = resim yok.
-  largeImage: 'image_794dfce8',
-  largeText: 'Always MiyagiDo',
-  smallImage: 'image_5df75fc2',
-  smallText: 'Learn this',
+  largeImage: '',
+  largeText: '',
+  smallImage: '',
+  smallText: '',
 
   // Hangi uygulamanin asset'leri kullanilsin? Bos birakirsan botun kendi CLIENT_ID'si kullanilir.
-  applicationId: '1527434131519045783',
+  applicationId: '',
 
   // Sure sayaci: 'none' = gosterme, 'now' = acildigi andan beri gecen sure,
   // ya da sabit bir baslangic icin ms cinsinden sayi (ornek: 1507665886000).
@@ -32,8 +32,6 @@ const RICH_PRESENCE = {
   // Butonlar (en fazla 2): { label: 'Yazi', url: 'https://...' }
   // NOT: Discord botlarda butonlari genelde gostermez; yine de gonderilir.
   buttons: [
-    { label: 'MiyagiDo Sunucusu', url: 'https://discord.gg/miyagido' },
-    { label: 'Instagram', url: 'https://www.instagram.com/yunusxhizm/' },
     // { label: 'Sunucuya Katil', url: 'https://discord.gg/xxxx' },
   ],
 

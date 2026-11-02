@@ -46,7 +46,7 @@ function readBody(req) {
     const chunks = [];
     req.on('data', c => {
       size += c.length;
-      if (size > 20_000) { reject(new ApiError(413, 'İstek çok büyük.')); req.destroy(); return; }
+      if (size > 150_000) { reject(new ApiError(413, 'İstek çok büyük.')); req.destroy(); return; }
       chunks.push(c);
     });
     req.on('end', () => {

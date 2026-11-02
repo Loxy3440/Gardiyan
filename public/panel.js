@@ -68,20 +68,11 @@ function renderStats(s) {
   $("sMembers").textContent = s.members.toLocaleString("tr-TR"); $("sGuilds").textContent = s.guilds;
   $("sPing").textContent = s.ping > 0 ? s.ping + " ms" : "—"; $("sUp").textContent = fmtUp(s.uptime); $("sCmds").textContent = s.commands;
 }
-function renderAutoNick(a) {
-  if (!a) return;
-  $("anEnabled").checked = !!a.enabled;
-  if (document.activeElement !== $("anText")) $("anText").value = a.text || "";
-  $("anPosition").value = a.position === "basa" ? "basa" : "sona";
-  $("anBots").checked = !!a.includeBots;
-}
-
 function render(d) {
   ROLES = d.roles || [];
   renderStats(d.stats);
   renderPresence(d.presence);
   renderLogSettings(d);
-  renderAutoNick(d.autoNick);
   Object.values(pickers).forEach(p => p.redraw());
   if (pickers.member && !groupsLoaded) { groupsLoaded = true; pickers.member.set(d.roleGroups.member); pickers.staff.set(d.roleGroups.staff); pickers.bot.set(d.roleGroups.bot); }
   $("intVal").value = d.activity.intervalSeconds;
@@ -283,6 +274,35 @@ function wireUserRp() {
   $("urpForm").addEventListener("submit", e => { e.preventDefault(); run($("urpSave"), async () => { const r = await api("rp/save", { enabled: $("urpOn").checked }); fillUrp(r); return r; }); });
 }
 
+// ---- Komut ekle ----
+async function loadCmdAdd() {
+  const d = await api("cmdlist");
+  $("cmGh").textContent = d.github.enabled
+    ? "GitHub bağlı: eklediğin komutlar " + d.github.repo + " (" + d.github.branch + ") deposuna da yazılır."
+    : "⚠️ GITHUB_TOKEN tanımlı değil: komut hemen çalışır ama GitHub'a yazılmaz, bot yeniden başlayınca kaybolur.";
+  $("cmList").replaceChildren(...(d.commands.length ? d.commands : []).map(c => row("/" + c.name,
+    (c.description || "") + (c.github ? " · GitHub ✓" : " · GitHub ✗"),
+    el("button", { class: "btn sm", type: "button", text: "Sil", onclick: e => { if (!confirm("/" + c.name + " silinsin mi?")) return; run(e.target, async () => { const r = await api("cmd/remove", { name: c.name }); await loadCmdAdd(); return r; }); } }))));
+  if (!d.commands.length) $("cmList").replaceChildren(el("li", { class: "item" }, el("div", { class: "txt" }, el("div", { class: "s", text: "Henüz panelden eklenen komut yok." }))));
+}
+function wireCmdAdd() {
+  $("cmForm").addEventListener("submit", e => {
+    e.preventDefault();
+    run($("cmSave"), async () => {
+      const r = await api("cmd/create", { name: $("cmName").value, description: $("cmDesc").value, reply: $("cmReply").value, embed: $("cmEmbed").checked, title: $("cmTitle").value, color: $("cmColor").value, ephemeral: $("cmEph").checked });
+      $("cmName").value = ""; $("cmDesc").value = ""; $("cmReply").value = "";
+      await loadCmdAdd(); return r;
+    });
+  });
+  $("cmUp").addEventListener("click", () => {
+    const f = $("cmFile").files[0];
+    if (!f) { toast("Önce bir .js dosyası seç.", true); return; }
+    if (!f.name.endsWith(".js")) { toast("Sadece .js dosyası yüklenebilir.", true); return; }
+    if (f.size > 100000) { toast("Dosya 100 KB'tan büyük olamaz.", true); return; }
+    run($("cmUp"), async () => { const code = await f.text(); const r = await api("cmd/upload", { code }); $("cmFile").value = ""; await loadCmdAdd(); return r; });
+  });
+}
+
 function wireBotStatus() {
   $("bsForm").addEventListener("submit", e => { e.preventDefault(); run(e.target.querySelector("button"), async () => { const r = await api("botstatus", { text: $("bsText").value.trim() }); renderPresence(r.presence); }, "Durum yazısı kaydedildi"); });
 }
@@ -295,16 +315,7 @@ function wire() {
     await load();
   }, "Roller kaydedildi"));
 
-  $("anSave").addEventListener("click", e => run(e.target, async () => {
-    const result = await api("autonick/save", {
-      enabled: $("anEnabled").checked, text: $("anText").value.trim(),
-      position: $("anPosition").value, includeBots: $("anBots").checked,
-    });
-    await load();
-    return result;
-  }));
-
-  wireRankup(); wireStatus(); wireLog(); wireDurum(); wireBotStatus(); wireUserRp();
+  wireRankup(); wireStatus(); wireLog(); wireDurum(); wireBotStatus(); wireUserRp(); wireCmdAdd();
   $("tabs").addEventListener("click", e => {
     const b = e.target.closest("button[data-tab]"); if (!b) return;
     document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x === b));
@@ -312,6 +323,7 @@ function wire() {
     document.querySelectorAll(".pane").forEach(p => (p.hidden = p.id !== "pane-" + b.dataset.tab));
     if (b.dataset.tab === "stats") loadStats().catch(err => toast(err.message, true));
     if (b.dataset.tab === "userrp") { loadUserRp().catch(err => toast(err.message, true)); }
+    if (b.dataset.tab === "cmdadd") loadCmdAdd().catch(err => toast(err.message, true));
     if (b.dataset.tab === "durum") loadDurum().catch(err => toast(err.message, true));
     if (b.dataset.tab === "log") loadLogs().catch(err => toast(err.message, true));
   });
